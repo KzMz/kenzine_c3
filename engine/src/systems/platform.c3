@@ -1,6 +1,7 @@
 module kenzine::platform;
 
 import kenzine::core;
+import kenzine::faults;
 
 fault PlatformError
 {
@@ -25,16 +26,16 @@ struct PlatformParams
     uint y;
 }
 
-struct PlatformSystem(kenzine::core::System)
+struct PlatformSystem(kenzine::core::System(<PlatformState, PlatformParams>))
 {
     PlatformState* state;
 }
 
 PlatformState* platform = null;
 
-fn void! PlatformSystem.initialize(PlatformSystem* self, void* state, void* params) @dynamic
+fn void! PlatformSystem.initialize(PlatformSystem* self, PlatformState* state, PlatformParams* params) @dynamic
 {
-    self.state = (PlatformState*) state;
+    self.state = state;
     if (self.state == null)
     {
         return SystemError.STATE_IS_NULL?;
@@ -42,14 +43,13 @@ fn void! PlatformSystem.initialize(PlatformSystem* self, void* state, void* para
 
     platform = self.state;
 
-    PlatformParams* p = (PlatformParams*) params;
-    if (p == null)
+    if (params == null)
     {
         return SystemError.PARAMS_IS_NULL?;
     }
 
     $if(env::WIN32):
-        win32::open_window(p.title, p.width, p.height, p.x, p.y)!;
+        win32::open_window(params.title, params.width, params.height, params.x, params.y)!;
         win32::clock_setup();
     $endif
 }

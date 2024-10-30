@@ -3,6 +3,8 @@ module kenzine::app;
 import kenzine::core;
 import kenzine::platform;
 import kenzine::memory;
+import kenzine::log;
+import kenzine::event;
 
 struct Application
 {
@@ -16,6 +18,8 @@ struct Application
 
     MemorySystem memory_system;
     PlatformSystem platform_system;
+    LogSystem log_system;
+    EventSystem event_system;
 }
 
 fault ApplicationError
@@ -50,6 +54,23 @@ fn void! initialize(Game* game)
     app.game = game;
     app.running = true;
     app.suspended = false;
+
+    LogParams log_params;
+    log_params.log_folder = "logs";
+    log_params.log_file = "engine.log";
+
+    // TODO: alloc log state
+    LogState log_state;
+
+    app.log_system.initialize(&log_state, &log_params)!;
+
+    EventParams params;
+
+    // TODO: alloc event state
+    EventState event_state;
+    app.event_system.initialize(&event_state, &params)!;
+
+    subscribe_default_events()!;
 
     // TODO: retrieve this from game
     PlatformParams platform_params;
@@ -123,5 +144,80 @@ fn void! shutdown()
     app.suspended = false;
 
     app.platform_system.shutdown()!;
+    app.event_system.shutdown()!;
+    app.log_system.shutdown()!;
     app.memory_system.shutdown()!;
+}
+
+fn void! subscribe_default_events()
+{
+    app.event_system.subscribe((uint) SystemEventCode.APPLICATION_QUIT, &app, &on_app_quit)!;
+    app.event_system.subscribe((uint) SystemEventCode.KEY_PRESSED, &app, &on_key_pressed_or_released)!;
+    app.event_system.subscribe((uint) SystemEventCode.KEY_RELEASED, &app, &on_key_pressed_or_released)!;
+    app.event_system.subscribe((uint) SystemEventCode.WINDOW_RESIZED, &app, &on_resize)!;
+}
+
+fn bool! on_app_quit(uint event_code, void* sender, void* listener, EventData event_data)
+{
+    if (event_code != (uint) SystemEventCode.APPLICATION_QUIT)
+    {
+        return false;
+    }
+
+    app.log_system.log(LogLevel.INFO, "Application quit event received")!;
+    app.running = false;
+    return true;
+}
+
+fn bool! on_key_pressed_or_released(uint event_code, void* sender, void* listener, EventData event_data)
+{
+    if (event_code != (uint) SystemEventCode.KEY_PRESSED && event_code != (uint) SystemEventCode.KEY_RELEASED)
+    {
+        return false;
+    }
+
+    ushort key = *(ushort*) &&event_data.data[0:2];
+    app.log_system.log(LogLevel.INFO, "Key event received: %d", key)!;
+
+    return true;
+}
+
+fn bool! on_resize(uint event_code, void* sender, void* listener, EventData event_data)
+{
+    if (event_code != (uint) SystemEventCode.WINDOW_RESIZED)
+    {
+        return false;
+    }
+
+    int width = *(int*) &&event_data.data[0:4];
+    int height = *(int*) &&event_data.data[4:8];
+
+    if (width == app.current_width && height == app.current_height)
+    {
+        return false;
+    }
+
+    app.current_width = width;
+    app.current_height = height;
+
+    if (width == 0 || height == 0)
+    {
+        app.log_system.log(LogLevel.INFO, "Window minimized")!;
+        app.suspended = true;
+        return true;
+    }
+    else 
+    {
+        if (app.suspended)
+        {
+            app.log_system.log(LogLevel.INFO, "Window restored")!;
+            app.suspended = false;
+        }
+        
+        // TODO: game resize
+        // TODO: renderer resize
+    }
+
+    app.log_system.log(LogLevel.INFO, "Window resized to: %d x %d", width, height)!;
+    return true;
 }

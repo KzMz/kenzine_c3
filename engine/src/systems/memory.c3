@@ -1,6 +1,7 @@
 module kenzine::memory;
 
 import kenzine::core;
+import kenzine::faults;
 
 enum MemoryTag : int(String description)
 {
@@ -33,21 +34,20 @@ struct MemoryParams
     Allocator default_allocator;
 }
 
-struct MemorySystem(kenzine::core::System)
+struct MemorySystem(kenzine::core::System(<MemoryState, MemoryParams>))
 {
     MemoryState* state;
 }
 
-fn void! MemorySystem.initialize(MemorySystem* self, void* state, void* params) @dynamic
+fn void! MemorySystem.initialize(MemorySystem* self, MemoryState* state, MemoryParams* params) @dynamic
 {
-    self.state = (MemoryState*) state;
+    self.state = state;
     if (self.state == null)
     {
         return SystemError.STATE_IS_NULL?;
     }
 
-    MemoryParams* p = (MemoryParams*) params;
-    if (p == null)
+    if (params == null)
     {
         return SystemError.PARAMS_IS_NULL?;
     }
@@ -59,7 +59,7 @@ fn void! MemorySystem.initialize(MemorySystem* self, void* state, void* params) 
     {
         self.state.tagged_memory[i].total_size = 0;
         self.state.tagged_memory[i].num_allocations = 0;
-        self.state.tagged_memory[i].allocator = p.default_allocator;
+        self.state.tagged_memory[i].allocator = params.default_allocator;
     }
 }
 

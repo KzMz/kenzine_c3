@@ -1,14 +1,8 @@
-module kenzine::core;
-
-fault SystemError
-{
-    STATE_IS_NULL,
-    PARAMS_IS_NULL,
-}
+module kenzine::core(<State, Params>);
 
 interface System
 {
-    fn void! initialize(void* state, void* params);
+    fn void! initialize(State* state, Params* params);
     fn void! shutdown();
     fn int get_state_size();
 }

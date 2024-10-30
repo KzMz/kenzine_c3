@@ -2,6 +2,8 @@ module kenzine::platform::win32;
 
 import std::io;
 import kenzine::core;
+import kenzine::faults;
+import kenzine::event;
 
 double clock_frequency = 0.0;
 
@@ -119,6 +121,16 @@ fn LResult window_proc(Hwnd hWnd, uint msg, WParam wp, LParam lp) @private @if(e
         {
             win32::post_quit_message(0);
             return 0;
+        }
+        case win32::WM_ERASEBKGND:
+        {
+            return 1;
+        }
+        case win32::WM_CLOSE:
+        {
+            EventData event;
+            (void) event::trigger((int) SystemEventCode.APPLICATION_QUIT, null, event);
+            return 1;
         }
     }
 

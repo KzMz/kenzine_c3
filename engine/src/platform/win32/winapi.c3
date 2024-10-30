@@ -110,6 +110,7 @@ const uint PM_REMOVE = 0x0001;
 // Message constants
 const uint WM_DESTROY = 0x0002;
 const uint WM_CLOSE = 0x0010;
+const uint WM_ERASEBKGND = 0x0014;
 
 extern fn HInstance get_module_handle(LPCWStr lpc) @extern("GetModuleHandleW");
 extern fn HIcon load_icon(HInstance hInstance, LPCWStr lpIconName) @extern("LoadIconW");
