@@ -27,7 +27,8 @@ struct LogParams
     String log_file;
 }
 
-struct LogSystem(kenzine::core::System(<LogState, LogParams>))
+def CoreSystem = kenzine::core::System(<LogState, LogParams>);
+struct LogSystem(CoreSystem)
 {
     LogState* state;
 }
@@ -49,6 +50,9 @@ fn void! LogSystem.initialize(LogSystem* self, LogState* state, LogParams* param
         return SystemError.PARAMS_IS_NULL?;
     }
 
+$if($feature(PLATFORM_WEB)):
+
+$else
     Path log_path = io::path::new(params.log_folder)!;
     if (!io::path::exists(log_path))
     {
@@ -57,15 +61,20 @@ fn void! LogSystem.initialize(LogSystem* self, LogState* state, LogParams* param
 
     log_path = log_path.new_append(params.log_file)!;
     self.state.file = io::file::open(log_path.path_string, "a")!;
+$endif
 }
 
 fn void! LogSystem.shutdown(LogSystem* self) @dynamic
 {
+$if($feature(PLATFORM_WEB)):
+
+$else
     self.state.file.flush()!;
     self.state.file.close()!;
+$endif
 }
 
-fn int LogSystem.get_state_size(LogSystem* self) @dynamic
+fn usz LogSystem.get_state_size(LogSystem* self) @dynamic
 {
     return LogState.sizeof;
 }
@@ -86,8 +95,10 @@ fn void! log(LogLevel level, String format, args...)
 
     io::printfn(log_message.str_view(), args)!;
 
-    if (log_state != null)
+    if (log_state != null && log_state.file.file != null)
     {
         log_state.file.write(log_message.str_view())!;
     }
 }
+
+extern fn void! log(LogLevel level, String format, args...) @if($feature(PLATFORM_WEB));

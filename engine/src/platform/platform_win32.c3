@@ -161,6 +161,11 @@ fn void handle_messages() @if(env::WIN32)
     Msg msg;
     while (win32::peek_message(&msg, null, 0, 0, win32::PM_REMOVE))
     {
+        if (msg.message == win32::WM_QUIT)
+        {
+            break;
+        }
+
         win32::translate_message(&msg);
         win32::dispatch_message(&msg);
     }

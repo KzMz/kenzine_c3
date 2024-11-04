@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BackendCodeEditorMiscSettings">
+    <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
+    <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexRemoved" />
+  </component>
+  <component name="CMakeProjectFlavorService">
+    <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7e407e46-1a75-47ef-a652-55354b4cdcdc" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/kenzine_c3.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/engine/src/utils.c3" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/playground/src/test_game.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/core/app.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/core/app.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/core/game.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/core/game.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/core/system.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/core/system.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/engine.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/engine.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/platform/platform_win32.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/platform/platform_win32.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/platform/win32/winapi.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/platform/win32/winapi.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/systems/event.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/event.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/systems/log.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/log.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/systems/memory.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/memory.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/systems/platform.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/platform.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/playground/src/playground.c3" beforeDir="false" afterPath="$PROJECT_DIR$/playground/src/playground.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/playground/web/kenzine.js" beforeDir="false" afterPath="$PROJECT_DIR$/playground/web/kenzine.js" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="2oLssRa9SRVWnTxGV5UiY8jldDU" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Batch.build-web.executor": "Run",
+    "Batch.build.executor": "Run",
+    "Native Application.Playground.executor": "Run",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "Shell Script.Playground.executor": "Run",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "main",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "CLionExternalConfigurable",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager" selected="Batch.build">
+    <configuration name="build-web" type="BatchConfigurationType" factoryName="Batch" temporary="true">
+      <module name="kenzine_c3" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SCRIPT_NAME" value="build-web.bat" />
+      <option name="PARAMETERS" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="build" type="BatchConfigurationType" factoryName="Batch" temporary="true">
+      <module name="kenzine_c3" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SCRIPT_NAME" value="build.bat" />
+      <option name="PARAMETERS" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Playground" type="ShConfigurationType">
+      <option name="SCRIPT_TEXT" value="bin/playground.exe" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="powershell.exe" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="false" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Batch.build" />
+      <item itemvalue="Batch.build-web" />
+      <item itemvalue="Shell Script.Playground" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Batch.build" />
+        <item itemvalue="Batch.build-web" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7e407e46-1a75-47ef-a652-55354b4cdcdc" name="Changes" comment="" />
+      <created>1730660397903</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1730660397903</updated>
+      <workItem from="1730660399273" duration="12607000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

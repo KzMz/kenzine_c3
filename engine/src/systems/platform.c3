@@ -26,7 +26,8 @@ struct PlatformParams
     uint y;
 }
 
-struct PlatformSystem(kenzine::core::System(<PlatformState, PlatformParams>))
+def CoreSystem = kenzine::core::System(<PlatformState, PlatformParams>);
+struct PlatformSystem(CoreSystem)
 {
     PlatformState* state;
 }
@@ -61,15 +62,25 @@ fn void! PlatformSystem.shutdown(PlatformSystem* self) @dynamic
     $endif
 }
 
-fn int PlatformSystem.get_state_size(PlatformSystem* self) @dynamic
+fn usz PlatformSystem.get_state_size(PlatformSystem* self) @dynamic
 {
     return PlatformState.sizeof;
+}
+
+fn void sleep(uint milliseconds)
+{
+    $if(env::WIN32):
+        win32::sleep(milliseconds);
+    $endif
 }
 
 fn double get_absolute_time()
 {
     $if(env::WIN32):
         return win32::get_absolute_time();
+    $endif
+    $if($feature(PLATFORM_WEB)):
+        return 0.0;
     $endif
 }
 

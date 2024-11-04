@@ -51,7 +51,8 @@ struct EventState
     EventEntry[256] entries;
 }
 
-struct EventSystem(kenzine::core::System(<EventState, EventParams>))
+def CoreSystem = kenzine::core::System(<EventState, EventParams>);
+struct EventSystem(CoreSystem)
 {
     EventState* state;
 }
@@ -76,17 +77,10 @@ fn void! EventSystem.initialize(EventSystem* self, EventState* state, EventParam
 
 fn void! EventSystem.shutdown(EventSystem* self) @dynamic
 {
-    for (int i = 0; i < self.state.entries.len; i++)
-    {
-        for (int j = 0; j < self.state.entries[j].subscriptions.len; j++)
-        {
-            self.state.entries[i].subscriptions[j].listener = null;
-            self.state.entries[i].subscriptions[j].callback = null;
-        }
-    }
+
 }
 
-fn int EventSystem.get_state_size(EventSystem* self) @dynamic
+fn usz EventSystem.get_state_size(EventSystem* self) @dynamic
 {
     return EventState.sizeof;
 }

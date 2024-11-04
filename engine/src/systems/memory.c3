@@ -2,29 +2,32 @@ module kenzine::memory;
 
 import kenzine::core;
 import kenzine::faults;
+import kenzine::app;
+import kenzine::log;
+import kenzine::utils;
 
 enum MemoryTag : int(String description)
 {
-    MEMORY_TAG_NONE = "None",
-    MEMORY_TAG_GAME = "Game",
-    MEMORY_TAG_RENDERER = "Renderer",
-    MEMORY_TAG_APP = "App",
-    MEMORY_TAG_TEXTURE = "Texture",
+    NONE = "UNTAGGED",
+    GAME = "GAME\t",
+    RENDERER = "RENDERER",
+    APP = "APP\t",
+    TEXTURE = "TEXTURE\t",
     
-    MEMORY_TAG_CUSTOM = "Custom",
+    CUSTOM = "CUSTOM\t",
 }
 
 struct TaggedMemory
 {
-    uint total_size;
-    uint num_allocations;
+    usz total_size;
+    usz num_allocations;
     Allocator allocator;
 }
 
 struct MemoryState
 {
-    uint total_size;
-    uint total_allocations;
+    usz total_size;
+    usz total_allocations;
 
     TaggedMemory[MemoryTag.len] tagged_memory;
 }
@@ -34,13 +37,18 @@ struct MemoryParams
     Allocator default_allocator;
 }
 
-struct MemorySystem(kenzine::core::System(<MemoryState, MemoryParams>))
+def CoreSystem = kenzine::core::System(<MemoryState, MemoryParams>);
+struct MemorySystem(CoreSystem)
 {
     MemoryState* state;
 }
 
+MemoryState* memory_state = null;
+
 fn void! MemorySystem.initialize(MemorySystem* self, MemoryState* state, MemoryParams* params) @dynamic
 {
+    memory_state = state;
+
     self.state = state;
     if (self.state == null)
     {
@@ -68,7 +76,78 @@ fn void! MemorySystem.shutdown(MemorySystem* self) @dynamic
     // TODO: destroy all arena and allocators if necessary
 }
 
-fn int MemorySystem.get_state_size(MemorySystem* self) @dynamic
+fn usz MemorySystem.get_state_size(MemorySystem* self) @dynamic
 {
     return MemoryState.sizeof;
+}
+
+fn void*! allocate(usz size, MemoryTag tag)
+{
+    if (memory_state == null)
+    {
+        return SystemError.STATE_IS_NULL?;
+    }
+
+    void* ptr = memory_state.tagged_memory[tag].allocator.acquire(size, AllocInitType.ZERO)!;
+
+    memory_state.total_size += size;
+    memory_state.total_allocations++;
+    memory_state.tagged_memory[tag].total_size += size;
+    memory_state.tagged_memory[tag].num_allocations++;
+
+    return ptr;
+}
+
+fn void! free(void* ptr, usz size, MemoryTag tag)
+{
+    if (memory_state == null)
+    {
+        return SystemError.STATE_IS_NULL?;
+    }
+
+    memory_state.tagged_memory[tag].allocator.release(ptr, false);
+
+    memory_state.total_size -= size;
+    memory_state.total_allocations--;
+    memory_state.tagged_memory[tag].total_size -= size;
+    memory_state.tagged_memory[tag].num_allocations--;
+}
+
+macro kallocate($Type, tag)
+{
+    return ($Type*) allocate($Type.sizeof, tag);
+}
+
+macro kfree(ptr, $Type, tag)
+{
+    free(ptr, $Type.sizeof, tag)!;
+}
+
+fn void! log_memory_report()
+{
+    if (memory_state == null)
+    {
+        return SystemError.STATE_IS_NULL?;
+    }
+
+    DString report = dstring::new();
+    defer report.free();
+
+    usz size = memory_state.total_size;
+
+    report.append("\n\nMemory Report\n");
+    report.appendf("Total size: %s\t Total allocations: %d\n", utils::size_string(size), memory_state.total_allocations);
+
+    for (int i = 0; i < MemoryTag.len; i++)
+    {
+        size = memory_state.tagged_memory[i].total_size;
+
+        String description = MemoryTag.values[i].description;
+        report.appendf("%s\tTotal size:\t%s\tTotal allocations:\t%d\n",
+            description,
+            utils::size_string(size),
+            memory_state.tagged_memory[i].num_allocations);
+    }
+
+    log::log(LogLevel.INFO, report.str_view())!;
 }

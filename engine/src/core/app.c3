@@ -6,6 +6,14 @@ import kenzine::memory;
 import kenzine::log;
 import kenzine::event;
 
+struct ApplicationConfig
+{
+    PlatformParams platform_params;
+    LogParams log_params;
+
+    float target_fps;
+}
+
 struct Application
 {
     Game* game;
@@ -16,15 +24,24 @@ struct Application
     int current_height;
     double last_time;
 
+    FrameState frame_state;
+    double target_frame_time;
+
     MemorySystem memory_system;
     PlatformSystem platform_system;
     LogSystem log_system;
     EventSystem event_system;
 }
 
+struct FrameState
+{
+    double running_time;
+    int frame_number;
+}
+
 fault ApplicationError
 {
-    GAME_IS_NULL,
+    GAME_NOT_VALID,
     APP_ALREADY_INITIALIZED,
 }
 
@@ -32,9 +49,9 @@ Application app;
 
 fn void! initialize(Game* game)
 {
-    if (game == null)
+    if (!game::game_valid(game))
     {
-        return ApplicationError.GAME_IS_NULL?;
+        return ApplicationError.GAME_NOT_VALID?;
     }
 
     if (game.app != null)
@@ -48,41 +65,33 @@ fn void! initialize(Game* game)
     MemoryState memory_state;
     app.memory_system.initialize(&memory_state, &memory_params)!;
 
-    // TODO: alloc game state
+    game.state = memory::allocate(game.state_size, MemoryTag.GAME)!;
 
     game.app = &app;
     app.game = game;
     app.running = true;
     app.suspended = false;
 
-    LogParams log_params;
-    log_params.log_folder = "logs";
-    log_params.log_file = "engine.log";
-
-    // TODO: alloc log state
-    LogState log_state;
-
-    app.log_system.initialize(&log_state, &log_params)!;
+    LogState* log_state = memory::kallocate(LogState, MemoryTag.APP)!;
+    app.log_system.initialize(log_state, &game.config.log_params)!;
 
     EventParams params;
-
-    // TODO: alloc event state
-    EventState event_state;
-    app.event_system.initialize(&event_state, &params)!;
+    EventState* event_state = memory::kallocate(EventState, MemoryTag.APP)!;
+    app.event_system.initialize(event_state, &params)!;
 
     subscribe_default_events()!;
 
-    // TODO: retrieve this from game
-    PlatformParams platform_params;
-    platform_params.title = "Kenzine";
-    platform_params.width = 1280;
-    platform_params.height = 720;
-    platform_params.x = 100;
-    platform_params.y = 100;
+    PlatformState* platform_state = memory::kallocate(PlatformState, MemoryTag.APP)!;
+    app.platform_system.initialize(platform_state, &game.config.platform_params)!;
 
-    // TODO: alloc platform state
-    PlatformState platform_state;
-    app.platform_system.initialize(&platform_state, &platform_params)!;
+    app.log_system.log(LogLevel.INFO, "Systems initialized")!;
+
+    game.init(game)!;
+    game.resize(game, game.config.platform_params.width, game.config.platform_params.height)!;
+
+    app.log_system.log(LogLevel.INFO, "Application initialized")!;
+
+    memory::log_memory_report()!;
 }
 
 fn void! run()
@@ -91,10 +100,9 @@ fn void! run()
     app.clock.update();
     app.last_time = app.clock.elapsed_time;
 
-    double running_time = 0;
-    int frames = 0;
-    float target_fps = 60.0;
-    double target_frame_time = 1.0 / target_fps;
+    app.frame_state.running_time = 0;
+    app.frame_state.frame_number = 0;
+    app.target_frame_time = 1.0 / app.game.config.target_fps;
 
     while (app.running)
     {
@@ -108,44 +116,52 @@ fn void! run()
         app.clock.update();
         double current_time = app.clock.elapsed_time;
         double delta_time = current_time - app.last_time;
-        double frame_start_time = platform::get_absolute_time(); 
+        double frame_start_time = platform::get_absolute_time();
 
-        // TODO: game update
-        // TODO: game render
+        app.game.update(app.game, delta_time)!;
+        app.game.render(app.game, delta_time)!;
 
         // TODO: render packet
 
         double frame_end_time = platform::get_absolute_time();
         double frame_time = frame_end_time - frame_start_time;
-        running_time += frame_time;
+        app.frame_state.running_time += frame_time;
 
-        double sleep_time = target_frame_time - frame_time;
+        double sleep_time = app.target_frame_time - frame_time;
         bool limit_fps = false;
         if (sleep_time > 0 && limit_fps)
         {
             uint sleep_ms = (uint) (sleep_time * 1000);
-
-            // TODO: platform sleep
+            platform::sleep(sleep_ms);
         }
 
-        frames++;
+        app.frame_state.frame_number++;
 
         // TODO: input update
         app.last_time = current_time;
     }
 
-    shutdown()!; 
+    shutdown()!;
 }
 
 fn void! shutdown()
 {
-    // TODO: game shutdown
+    app.game.shutdown(app.game)!;
+    memory::free(app.game.state, app.game.state_size, MemoryTag.GAME)!;
+
     app.running = false;
     app.suspended = false;
 
     app.platform_system.shutdown()!;
+    memory::kfree(app.platform_system.state, PlatformState, MemoryTag.APP)!;
+
     app.event_system.shutdown()!;
+    memory::kfree(app.event_system.state, EventState, MemoryTag.APP)!;
+
+    app.log_system.log(LogLevel.INFO, "Application shutting down")!;
     app.log_system.shutdown()!;
+    memory::kfree(app.log_system.state, LogState, MemoryTag.APP)!;
+
     app.memory_system.shutdown()!;
 }
 
