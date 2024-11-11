@@ -2,29 +2,47 @@ module kenzine::core::game;
 
 import kenzine::app;
 
-def GameInit = fn void!(Game* game);
-def GameUpdate = fn void!(Game* game, double delta_time);
-def GameRender = fn void!(Game* game, double delta_time);
-def GameResize = fn void!(Game* game, int width, int height);
-def GameShutdown = fn void!(Game* game);
+interface GameFunctions
+{
+    fn void! initialize(Game* game);
+    fn void! update(Game* game, double delta_time);
+    fn void! render(Game* game, double delta_time);
+    fn void! resize(Game* game, int width, int height);
+    fn void! shutdown(Game* game);
+}
 
 struct Game
 {
     ApplicationConfig config;
 
     Application* app;
-
-    GameInit init;
-    GameUpdate update;
-    GameRender render;
-    GameResize resize;
-    GameShutdown shutdown;
+    GameFunctions functions;
 
     void* state; // Every game will implement its state differently
     usz state_size;
 }
 
-macro game_valid(game)
+fn void! Game.initialize(Game* self)
 {
-    return game != null && game.init != null && game.update != null && game.render != null && game.resize != null && game.shutdown != null;
+    self.functions.initialize(self)!;
+}
+
+fn void! Game.update(Game* self, double delta_time)
+{
+    self.functions.update(self, delta_time)!;
+}
+
+fn void! Game.render(Game* self, double delta_time)
+{
+    self.functions.render(self, delta_time)!;
+}
+
+fn void! Game.resize(Game* self, int width, int height)
+{
+    self.functions.resize(self, width, height)!;
+}
+
+fn void! Game.shutdown(Game* self)
+{
+    self.functions.shutdown(self)!;
 }

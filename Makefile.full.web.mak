@@ -13,7 +13,7 @@ SRC_FILES := $(call rwildcard,$(ASSEMBLY)/,*.c3) # Get all .c3 files
 ENGINE_FILES := $(call rwildcard,$(ENGINE)/,*.c3) # Get all .c3 files
 DIRECTORIES := \$(ASSEMBLY)\src $(subst $(DIR),,$(shell dir $(ASSEMBLY)\src /S /AD /B | findstr /i src)) # Get all directories under src.
 
-WEB_FLAGS := --reloc=none --target wasm32 -g0 -O3 --link-libc=no --use-stdlib=yes --no-entry
+WEB_FLAGS := --reloc=none --target wasm32 -g0 -O3 --link-libc=no --no-entry -z --export-table -z --allow-undefined
 FLAGS := --obj-out $(OBJ_DIR) --build-dir $(BUILD_DIR) --output-dir $(OUTPUT_DIR) -D KENZINE_IMPORT -D PLATFORM_WEB
 
 all: scaffold compile

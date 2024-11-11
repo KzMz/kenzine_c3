@@ -23,6 +23,7 @@ struct Application
     int current_width;
     int current_height;
     double last_time;
+    usz temp_mark;
 
     FrameState frame_state;
     double target_frame_time;
@@ -41,18 +42,20 @@ struct FrameState
 
 fault ApplicationError
 {
-    GAME_NOT_VALID,
     APP_ALREADY_INITIALIZED,
 }
 
-Application app;
+Application* app;
 
-fn void! initialize(Game* game)
+fn void! Application.initialize(Application* self, Game* game)
 {
-    if (!game::game_valid(game))
-    {
-        return ApplicationError.GAME_NOT_VALID?;
-    }
+    app = self;
+
+    app.temp_mark = allocator::temp().used;
+
+$if($feature(PLATFORM_WEB)):
+    platform::wasm::initialize_wasm(game);
+$endif
 
     if (game.app != null)
     {
@@ -67,7 +70,7 @@ fn void! initialize(Game* game)
 
     game.state = memory::allocate(game.state_size, MemoryTag.GAME)!;
 
-    game.app = &app;
+    game.app = app;
     app.game = game;
     app.running = true;
     app.suspended = false;
@@ -86,15 +89,15 @@ fn void! initialize(Game* game)
 
     app.log_system.log(LogLevel.INFO, "Systems initialized")!;
 
-    game.init(game)!;
-    game.resize(game, game.config.platform_params.width, game.config.platform_params.height)!;
+    game.initialize()!;
+    game.resize(game.config.platform_params.width, game.config.platform_params.height)!;
 
     app.log_system.log(LogLevel.INFO, "Application initialized")!;
 
     memory::log_memory_report()!;
 }
 
-fn void! run()
+fn void! Application.run(Application* self)
 {
     app.clock.start();
     app.clock.update();
@@ -103,6 +106,11 @@ fn void! run()
     app.frame_state.running_time = 0;
     app.frame_state.frame_number = 0;
     app.target_frame_time = 1.0 / app.game.config.target_fps;
+
+$if($feature(PLATFORM_WEB)):
+
+$else
+    defer app.shutdown()!!;
 
     while (app.running)
     {
@@ -118,8 +126,8 @@ fn void! run()
         double delta_time = current_time - app.last_time;
         double frame_start_time = platform::get_absolute_time();
 
-        app.game.update(app.game, delta_time)!;
-        app.game.render(app.game, delta_time)!;
+        app.game.update(delta_time)!;
+        app.game.render(delta_time)!;
 
         // TODO: render packet
 
@@ -139,14 +147,14 @@ fn void! run()
 
         // TODO: input update
         app.last_time = current_time;
+        allocator::temp().reset(app.temp_mark);
     }
-
-    shutdown()!;
+$endif
 }
 
-fn void! shutdown()
+fn void! Application.shutdown(Application* self)
 {
-    app.game.shutdown(app.game)!;
+    app.game.shutdown()!;
     memory::free(app.game.state, app.game.state_size, MemoryTag.GAME)!;
 
     app.running = false;

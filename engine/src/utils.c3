@@ -1,32 +1,27 @@
 ﻿module kenzine::utils;
 
+enum ByteSize : int(usz byte_size, String unit)
+{
+    GIGA = { 1024 * 1024 * 1024, "GiB" },
+    MEGA = { 1024 * 1024, "MiB" },
+    KILO = { 1024, "KiB" },
+    BYTE =  { 1, "B" },
+}
+
 fn String size_string(usz size)
 {
-    const usz GB = 1024 * 1024 * 1024;
-    const usz MB = 1024 * 1024;
-    const usz KB = 1024;
-
     DString result = dstring::new();
     defer result.free();
 
-    if (size >= GB)
+    for (int i = 0; i < ByteSize.elements; ++i)
     {
-        size /= GB;
-        result.appendf("%d GiB", size);
+        if (size >= ByteSize.values[i].byte_size)
+        {
+            size /= ByteSize.values[i].byte_size;
+            result.appendf("%d %s", size, ByteSize.values[i].unit);
+            return result.copy_str();
+        }
     }
-    else if (size >= MB)
-    {
-        size /= MB;
-        result.appendf("%d MiB", size);
-    }
-    else if (size >= KB)
-    {
-        size /= KB;
-        result.appendf("%d KiB", size);
-    }
-    else
-    {
-        result.appendf("%d B", size);
-    }
-    return result.copy_str();
+
+    return "0 B";
 }

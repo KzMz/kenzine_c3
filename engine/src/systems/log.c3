@@ -79,7 +79,7 @@ fn usz LogSystem.get_state_size(LogSystem* self) @dynamic
     return LogState.sizeof;
 }
 
-fn void! LogSystem.log(LogSystem*self, LogLevel level, String format, args...) @dynamic
+fn void! LogSystem.log(LogSystem* self, LogLevel level, String format, args...) @dynamic
 {
     log(level, format, args)!;
 }
@@ -88,17 +88,23 @@ fn void! log(LogLevel level, String format, args...)
 {
     // TODO: add colors
 
-    DString log_message = dstring::new(level.prefix);
-    defer log_message.free();
-
-    log_message.append(format);
-
-    io::printfn(log_message.str_view(), args)!;
-
-    if (log_state != null && log_state.file.file != null)
+    Allocator allocator = allocator::temp();
+    @pool(allocator)
     {
-        log_state.file.write(log_message.str_view())!;
-    }
-}
+        DString str = dstring::temp_with_capacity(format.len + args.len * 8);
+        str.append(level.prefix);
+        str.appendf(format, ...args);
 
-extern fn void! log(LogLevel level, String format, args...) @if($feature(PLATFORM_WEB));
+        String message = str.copy_str(allocator);
+        io::printn(message);
+
+$if(!$feature(PLATFORM_WEB)):
+        if (log_state != null && log_state.file.file != null)
+        {
+            log_state.file.write(message)!;
+            log_state.file.write("\n")!;
+            log_state.file.flush()!;
+        }
+$endif
+    };
+}

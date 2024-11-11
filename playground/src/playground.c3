@@ -4,7 +4,11 @@ import std::io;
 
 import test_game;
 
-fn void main()
+TestGameFunctions functions;
+Game game;
+Application app;
+
+fn void main() @export("main") @wasm
 {
     ApplicationConfig config =
     {
@@ -22,15 +26,10 @@ fn void main()
         .target_fps = 60,
     };
 
-    Game game;
     game.state_size = GameState.sizeof;
     game.config = config;
-    game.init = &test_game::init;
-    game.update = &test_game::update;
-    game.render = &test_game::render;
-    game.resize = &test_game::resize;
-    game.shutdown = &test_game::shutdown;
+    game.functions = (GameFunctions) &functions;
 
-    app::initialize(&game)!!;
-    app::run()!!;
+    app.initialize(&game)!!;
+    app.run()!!;
 }

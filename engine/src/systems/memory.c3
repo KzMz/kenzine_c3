@@ -85,7 +85,7 @@ fn void*! allocate(usz size, MemoryTag tag)
 {
     if (memory_state == null)
     {
-        return SystemError.STATE_IS_NULL?;
+        return allocator::heap().acquire(size, AllocInitType.ZERO)!;
     }
 
     void* ptr = memory_state.tagged_memory[tag].allocator.acquire(size, AllocInitType.ZERO)!;
@@ -102,7 +102,7 @@ fn void! free(void* ptr, usz size, MemoryTag tag)
 {
     if (memory_state == null)
     {
-        return SystemError.STATE_IS_NULL?;
+        return allocator::heap().release(ptr, false);
     }
 
     memory_state.tagged_memory[tag].allocator.release(ptr, false);

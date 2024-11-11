@@ -53,6 +53,12 @@ fn void! PlatformSystem.initialize(PlatformSystem* self, PlatformState* state, P
         win32::open_window(params.title, params.width, params.height, params.x, params.y)!;
         win32::clock_setup();
     $endif
+
+    $if($feature(PLATFORM_WEB)):
+        wasm::app_set_title(&params.title[0], params.title.len);
+        wasm::canvas_resize(params.width, params.height);
+        wasm::canvas_move(params.x, params.y);
+    $endif
 }
 
 fn void! PlatformSystem.shutdown(PlatformSystem* self) @dynamic
@@ -80,7 +86,7 @@ fn double get_absolute_time()
         return win32::get_absolute_time();
     $endif
     $if($feature(PLATFORM_WEB)):
-        return 0.0;
+        return wasm::get_absolute_time();
     $endif
 }
 
