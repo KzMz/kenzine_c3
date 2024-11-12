@@ -19,23 +19,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7e407e46-1a75-47ef-a652-55354b4cdcdc" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/engine/src/common.c3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/engine/src/platform/platform_wasm.c3" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/engine/src/renderer/renderer_backend.c3" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/engine/src/renderer/renderer_frontend.c3" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/engine/src/renderer/webgpu/webgpu_backend.c3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile.full.web.mak" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile.full.web.mak" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/core/app.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/core/app.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/core/faults.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/faults.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/core/game.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/core/game.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/systems/log.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/log.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/systems/memory.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/memory.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/systems/platform.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/platform.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/utils.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/utils.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/engine.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/playground.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/playground.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/playground/src/playground.c3" beforeDir="false" afterPath="$PROJECT_DIR$/playground/src/playground.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/playground/src/test_game.c3" beforeDir="false" afterPath="$PROJECT_DIR$/playground/src/test_game.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/playground/web/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/playground/web/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/playground/web/kenzine.js" beforeDir="false" afterPath="$PROJECT_DIR$/playground/web/kenzine.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -141,7 +128,7 @@
       <updated>1730660397903</updated>
       <workItem from="1730660399273" duration="12607000" />
       <workItem from="1731260616037" duration="16326000" />
-      <workItem from="1731312938381" duration="6412000" />
+      <workItem from="1731312938381" duration="7046000" />
     </task>
     <servers />
   </component>
