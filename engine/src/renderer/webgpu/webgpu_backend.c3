@@ -1,6 +1,6 @@
 ﻿module kenzine::renderer::webgpu;
 
-struct WebGPUBackend(RendererBackend)
+struct WebGPUBackend()
 {
     char dummy;
 }

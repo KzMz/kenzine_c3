@@ -19,10 +19,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7e407e46-1a75-47ef-a652-55354b4cdcdc" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/engine/src/renderer/renderer_backend.c3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/engine/src/renderer/renderer_frontend.c3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/engine/src/renderer/webgpu/webgpu_backend.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile.full.windows.mak" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile.full.windows.mak" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/renderer/webgpu/webgpu_backend.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/renderer/webgpu/webgpu_backend.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/playground.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/playground.log" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,7 +71,7 @@
       <recent name="D:\Repos\kenzine_c3\engine\src" />
     </key>
   </component>
-  <component name="RunManager" selected="Batch.build-web">
+  <component name="RunManager" selected="Shell Script.Playground">
     <configuration name="build-web" type="BatchConfigurationType" factoryName="Batch" temporary="true">
       <module name="kenzine_c3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -113,8 +112,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Batch.build-web" />
         <item itemvalue="Batch.build" />
+        <item itemvalue="Batch.build-web" />
       </list>
     </recent_temporary>
   </component>
@@ -129,6 +128,7 @@
       <workItem from="1730660399273" duration="12607000" />
       <workItem from="1731260616037" duration="16326000" />
       <workItem from="1731312938381" duration="7046000" />
+      <workItem from="1731382886715" duration="603000" />
     </task>
     <servers />
   </component>
