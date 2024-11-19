@@ -22,4 +22,4 @@ scaffold: # create build directory
 	@echo Done.
 
 compile:
-	c3\c3c compile $(SRC_FILES) $(ENGINE_FILES) $(ENGINE_FILES_I) --obj-out $(OBJ_DIR) --build-dir $(BUILD_DIR) --output-dir $(BUILD_DIR) -D KENZINE_IMPORT -D PLATFORM_WINDOWS -o $(ASSEMBLY) --trust=include -L engine/src/thirdparty/webgpu -l libwgpu_native
+	c3\c3c compile $(SRC_FILES) $(ENGINE_FILES) $(ENGINE_FILES_I) --obj-out $(OBJ_DIR) --build-dir $(BUILD_DIR) --output-dir $(BUILD_DIR) -D KENZINE_IMPORT -D PLATFORM_WINDOWS -o $(ASSEMBLY) --trust=include -z "./engine/src/thirdparty/wgpu-native/libwgpu_native.dll.lib"

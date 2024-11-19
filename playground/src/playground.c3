@@ -1,5 +1,7 @@
 import kenzine::app;
 import kenzine::core::game;
+import kenzine::renderer;
+import kenzine::common;
 import std::io;
 
 import test_game;
@@ -24,7 +26,27 @@ fn void main() @export("main") @wasm
             .log_file = "playground.log",
         },
         .target_fps = 60,
+        .resource_params = {
+            .max_loaders = 10,
+            .base_asset_path = "assets",
+        },
+        .renderer_params = {
+            .backend_type = SupportedBackend.WEBGPU,
+            .device_label = "WebGPU Device",
+            .clear_color = common::Color { 0.9, 0.1, 0.2, 1.0 },
+            .shader_file = "shaders/shader.wgsl",
+            .vertex_shader_params = {
+                .entry_point = "vertex_main",
+            },
+            .fragment_shader_params = {
+                .entry_point = "fragment_main",
+            },
+        },
     };
+
+$if($feature(PLATFORM_WEB)):
+    config.renderer_params.backend_type = SupportedBackend.JS;
+$endif
 
     game.state_size = GameState.sizeof;
     game.config = config;

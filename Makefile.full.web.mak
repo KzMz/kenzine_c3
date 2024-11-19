@@ -11,6 +11,7 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
 SRC_FILES := $(call rwildcard,$(ASSEMBLY)/,*.c3) # Get all .c3 files
 ENGINE_FILES := $(call rwildcard,$(ENGINE)/,*.c3) # Get all .c3 files
+ENGINE_FILES_I := $(call rwildcard,$(ENGINE)/,*.c3i) # Get all .c3i files
 DIRECTORIES := \$(ASSEMBLY)\src $(subst $(DIR),,$(shell dir $(ASSEMBLY)\src /S /AD /B | findstr /i src)) # Get all directories under src.
 
 WEB_FLAGS := --reloc=none --target wasm32 -g0 -O3 --link-libc=no --no-entry -z --export-table -z --allow-undefined
@@ -25,4 +26,4 @@ scaffold: # create build directory
 	@echo Done.
 
 compile:
-	c3\c3c compile $(SRC_FILES) $(ENGINE_FILES) $(FLAGS) $(WEB_FLAGS) -o $(ASSEMBLY)
+	c3\c3c compile $(SRC_FILES) $(ENGINE_FILES) $(ENGINE_FILES_I) $(FLAGS) $(WEB_FLAGS) -o $(ASSEMBLY)

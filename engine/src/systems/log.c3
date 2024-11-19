@@ -54,6 +54,8 @@ $if($feature(PLATFORM_WEB)):
 
 $else
     Path log_path = io::path::new(params.log_folder)!;
+    defer log_path.free();
+
     if (!io::path::exists(log_path))
     {
         io::path::mkdir(log_path)!;

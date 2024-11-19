@@ -5,11 +5,17 @@ import kenzine::platform;
 import kenzine::memory;
 import kenzine::log;
 import kenzine::event;
+import kenzine::renderer;
+import kenzine::resource;
+import kenzine::resources;
+import std::io;
 
 struct ApplicationConfig
 {
     PlatformParams platform_params;
     LogParams log_params;
+    ResourceParams resource_params;
+    RendererParams renderer_params;
 
     float target_fps;
 }
@@ -32,6 +38,8 @@ struct Application
     PlatformSystem platform_system;
     LogSystem log_system;
     EventSystem event_system;
+    ResourceSystem resource_system;
+    RendererSystem renderer_system;
 }
 
 struct FrameState
@@ -87,12 +95,44 @@ $endif
     PlatformState* platform_state = memory::kallocate(PlatformState, MemoryTag.APP)!;
     app.platform_system.initialize(platform_state, &game.config.platform_params)!;
 
+    ResourceState* resource_state = memory::kallocate(ResourceState, MemoryTag.APP)!;
+    app.resource_system.initialize(resource_state, &game.config.resource_params)!;
+
+    RendererBackend renderer_backend;
+    switch (game.config.renderer_params.backend_type)
+    {
+        case SupportedBackend.WEBGPU:
+            renderer_backend = memory::kallocate(WebGPUBackend, MemoryTag.RENDERER)!;
+            break;
+        case SupportedBackend.JS:
+            renderer_backend = memory::kallocate(JSBackend, MemoryTag.RENDERER)!;
+            break;
+    }
+
+    game.config.renderer_params.backend = renderer_backend;
+    if (game.config.renderer_params.swapchain_width == 0)
+    {
+        game.config.renderer_params.swapchain_width = game.config.platform_params.width;
+    }
+    if (game.config.renderer_params.swapchain_height == 0)
+    {
+        game.config.renderer_params.swapchain_height = game.config.platform_params.height;
+    }
+
+    RendererState* renderer_state = memory::kallocate(RendererState, MemoryTag.RENDERER)!;
+    app.renderer_system.initialize(renderer_state, &game.config.renderer_params)!;
+
     app.log_system.log(LogLevel.INFO, "Systems initialized")!;
 
     game.initialize()!;
     game.resize(game.config.platform_params.width, game.config.platform_params.height)!;
 
     app.log_system.log(LogLevel.INFO, "Application initialized")!;
+
+    Resource resource;
+    app.resource_system.load(ResourceType.TEXT, "test.txt", &resource)!;
+    io::printfn("Resource data: %s\n", resource.as_string())!;
+    app.resource_system.unload(&resource)!;
 
     memory::log_memory_report()!;
 }
@@ -129,7 +169,9 @@ $else
         app.game.update(delta_time)!;
         app.game.render(delta_time)!;
 
-        // TODO: render packet
+        RenderPacket packet;
+        packet.delta_time = delta_time;
+        app.renderer_system.draw(&packet)!;
 
         double frame_end_time = platform::get_absolute_time();
         double frame_time = frame_end_time - frame_start_time;
@@ -159,6 +201,23 @@ fn void! Application.shutdown(Application* self)
 
     app.running = false;
     app.suspended = false;
+
+    app.renderer_system.shutdown()!;
+
+    switch (app.renderer_system.state.backend_type)
+    {
+        case SupportedBackend.WEBGPU:
+            memory::kfree(app.renderer_system.state.backend, WebGPUBackend, MemoryTag.RENDERER)!;
+            break;
+        case SupportedBackend.JS:
+            memory::kfree(app.renderer_system.state.backend, JSBackend, MemoryTag.RENDERER)!;
+            break;
+    }
+
+    memory::kfree(app.renderer_system.state, RendererState, MemoryTag.RENDERER)!;
+
+    app.resource_system.shutdown()!;
+    memory::kfree(app.resource_system.state, ResourceState, MemoryTag.APP)!;
 
     app.platform_system.shutdown()!;
     memory::kfree(app.platform_system.state, PlatformState, MemoryTag.APP)!;
