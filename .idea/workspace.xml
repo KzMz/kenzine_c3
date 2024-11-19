@@ -19,16 +19,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7e407e46-1a75-47ef-a652-55354b4cdcdc" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/engine/src/resources/material_resource.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/shaders/builtin.shader.json" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/builtin.shader.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/resources/shader_resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/resources/shader_resource.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/systems/renderer/backends/webgpu_backend.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/renderer/backends/webgpu_backend.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/systems/renderer/renderer.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/renderer/renderer.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/systems/resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/resource.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/playground.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/playground.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/playground/src/playground.c3" beforeDir="false" afterPath="$PROJECT_DIR$/playground/src/playground.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,7 +138,7 @@
       <workItem from="1731970406735" duration="8613000" />
       <workItem from="1731997586401" duration="5054000" />
       <workItem from="1732031160018" duration="23000" />
-      <workItem from="1732031496962" duration="4494000" />
+      <workItem from="1732031496962" duration="5070000" />
     </task>
     <servers />
   </component>

@@ -52,4 +52,7 @@ Mkfile.old
 dkms.conf
 
 c3/
+logs/
+bin/logs/
+bin/
 *.wasm
