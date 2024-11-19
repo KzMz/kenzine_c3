@@ -78,7 +78,7 @@ fn void! ResourceSystem.register_loader(ResourceSystem* self, ResourceLoader loa
         return ResourceSystemError.RESOURCE_LOADER_INVALID_TYPE?;
     }
 
-    if (self.get_loader(loader.type, loader.custom_type)! != null)
+    if (get_loader(loader.type, loader.custom_type)! != null)
     {
         return ResourceSystemError.RESOURCE_LOADER_ALREADY_REGISTERED?;
     }
@@ -91,9 +91,9 @@ fn void! ResourceSystem.register_loader(ResourceSystem* self, ResourceLoader loa
     self.state.resource_loaders.push(loader);
 }
 
-fn void! ResourceSystem.load(ResourceSystem* self, ResourceType type, String name, Resource* out_resource)
+fn void! load(ResourceType type, String name, Resource* out_resource)
 {
-    if (self.state == null)
+    if (resource_state == null)
     {
         return SystemError.STATE_IS_NULL?;
     }
@@ -108,7 +108,33 @@ fn void! ResourceSystem.load(ResourceSystem* self, ResourceType type, String nam
         return ResourceSystemError.RESOURCE_LOADER_USE_LOAD_CUSTOM_INSTEAD?;
     }
 
-    ResourceLoader* loader = self.get_loader(type, "")!;
+    ResourceLoader* loader = get_loader(type, "")!;
+    if (loader == null)
+    {
+        return ResourceSystemError.RESOURCE_LOADER_NOT_FOUND?;
+    }
+
+    loader.functions.load(loader, name, out_resource)!;
+}
+
+fn void! ResourceSystem.load(ResourceSystem* self, ResourceType type, String name, Resource* out_resource)
+{
+    load(type, name, out_resource)!;
+}
+
+fn void! load_custom(String custom_type, String name, Resource* out_resource)
+{
+    if (resource_state == null)
+    {
+        return SystemError.STATE_IS_NULL?;
+    }
+
+    if (custom_type.len == 0)
+    {
+        return ResourceSystemError.RESOURCE_LOADER_INVALID_TYPE?;
+    }
+
+    ResourceLoader* loader = get_loader(ResourceType.CUSTOM, custom_type)!;
     if (loader == null)
     {
         return ResourceSystemError.RESOURCE_LOADER_NOT_FOUND?;
@@ -119,33 +145,17 @@ fn void! ResourceSystem.load(ResourceSystem* self, ResourceType type, String nam
 
 fn void! ResourceSystem.load_custom(ResourceSystem* self, String custom_type, String name, Resource* out_resource)
 {
-    if (self.state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
-    if (custom_type.len == 0)
-    {
-        return ResourceSystemError.RESOURCE_LOADER_INVALID_TYPE?;
-    }
-
-    ResourceLoader* loader = self.get_loader(ResourceType.CUSTOM, custom_type)!;
-    if (loader == null)
-    {
-        return ResourceSystemError.RESOURCE_LOADER_NOT_FOUND?;
-    }
-
-    loader.functions.load(loader, name, out_resource)!;
+    load_custom(custom_type, name, out_resource)!;
 }
 
-fn void! ResourceSystem.unload(ResourceSystem* self, Resource* resource)
+fn void! unload(Resource* resource)
 {
-    if (self.state == null)
+    if (resource_state == null)
     {
         return SystemError.STATE_IS_NULL?;
     }
 
-    ResourceLoader* loader = self.get_loader(resource.type, resource.metadata.custom_type)!;
+    ResourceLoader* loader = get_loader(resource.type, resource.metadata.custom_type)!;
     if (loader == null)
     {
         return ResourceSystemError.RESOURCE_LOADER_NOT_FOUND?;
@@ -154,29 +164,34 @@ fn void! ResourceSystem.unload(ResourceSystem* self, Resource* resource)
     loader.functions.unload(loader, resource)!;
 }
 
-fn ResourceLoader*! ResourceSystem.get_loader(ResourceSystem* self, ResourceType type, String custom_type)
+fn void! ResourceSystem.unload(ResourceSystem* self, Resource* resource)
 {
-    if (self.state == null)
+    unload(resource)!;
+}
+
+fn ResourceLoader*! get_loader(ResourceType type, String custom_type)
+{
+    if (resource_state == null)
     {
         return SystemError.STATE_IS_NULL?;
     }
 
-    for (usz i = 0; i < self.state.resource_loaders.len(); i++)
+    for (usz i = 0; i < resource_state.resource_loaders.len(); i++)
     {
-        if (self.state.resource_loaders[i].type != type)
+        if (resource_state.resource_loaders[i].type != type)
         {
             continue;
         }
 
         if (type == ResourceType.CUSTOM)
         {
-            if (self.state.resource_loaders[i].custom_type != custom_type)
+            if (resource_state.resource_loaders[i].custom_type != custom_type)
             {
                 continue;
             }
         }
 
-        return &self.state.resource_loaders[i];
+        return &resource_state.resource_loaders[i];
     }
 
     return null;

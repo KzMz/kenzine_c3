@@ -18,7 +18,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7e407e46-1a75-47ef-a652-55354b4cdcdc" name="Changes" comment="" />
+    <list default="true" id="7e407e46-1a75-47ef-a652-55354b4cdcdc" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/engine/src/resources/material_resource.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/shaders/builtin.shader.json" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/builtin.shader.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/resources/shader_resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/resources/shader_resource.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/systems/renderer/backends/webgpu_backend.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/renderer/backends/webgpu_backend.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/systems/renderer/renderer.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/renderer/renderer.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/systems/resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/resource.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/playground.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/playground.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/playground/src/playground.c3" beforeDir="false" afterPath="$PROJECT_DIR$/playground/src/playground.c3" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,29 +51,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Batch.build-web.executor": "Run",
-    "Batch.build.executor": "Run",
-    "Native Application.Playground.executor": "Run",
-    "RunOnceActivity.RadMigrateCodeStyle": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "Shell Script.Playground.executor": "Run",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Batch.build-web.executor&quot;: &quot;Run&quot;,
+    &quot;Batch.build.executor&quot;: &quot;Run&quot;,
+    &quot;Native Application.Playground.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;Shell Script.Playground.executor&quot;: &quot;Run&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\Repos\kenzine_c3\assets" />
@@ -136,6 +147,7 @@
       <workItem from="1731970406735" duration="8613000" />
       <workItem from="1731997586401" duration="5054000" />
       <workItem from="1732031160018" duration="23000" />
+      <workItem from="1732031496962" duration="4494000" />
     </task>
     <servers />
   </component>

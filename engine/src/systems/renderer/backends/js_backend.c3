@@ -30,6 +30,11 @@ $if($feature(PLATFORM_WEB)):
 $endif
 }
 
+fn void! JSBackend.draw_frame(JSBackend* self, double delta_time) @dynamic
+{
+
+}
+
 fn void! JSBackend.end_frame(JSBackend* self, double delta_time) @dynamic
 {
 $if($feature(PLATFORM_WEB)):

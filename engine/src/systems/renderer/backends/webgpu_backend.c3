@@ -7,6 +7,12 @@ import kenzine::common;
 import kenzine::log;
 import kenzine::platform;
 
+// TEMP
+import kenzine::resource;
+import kenzine::resources;
+import std::io;
+// TEMP end
+
 fault WebGPUError
 {
     INSTANCE_CREATION_FAILED,
@@ -154,16 +160,26 @@ $endif
     shaderModuleDescriptor.hintCount = 0;
     shaderModuleDescriptor.hints = null;
 
+    // TEMP
+    Resource shader;
+    resource::load(ResourceType.SHADER, "builtin", &shader)!;
+    String code = resources::shader::get_code(&shader)!;
+    String vertex_entry = resources::shader::get_entry(&shader, SupportedShaderStage.VERTEX);
+    String fragment_entry = resources::shader::get_entry(&shader, SupportedShaderStage.FRAGMENT);
+    // TEMP end
+
     // TODO: use the config for determine what to use here
     ShaderModuleWGSLDescriptor shaderModuleWGSLDescriptor;
     shaderModuleWGSLDescriptor.chain.next = null;
     shaderModuleWGSLDescriptor.chain.sType = SType.SHADER_MODULE_WGSL_DESCRIPTOR;
-    shaderModuleWGSLDescriptor.code = ""; // TODO: resource system and abstracted shader model
+    shaderModuleWGSLDescriptor.code = (ZString) code;
     shaderModuleDescriptor.next = &shaderModuleWGSLDescriptor.chain;
 
     ShaderModule shaderModule = self.device.createShaderModule(&shaderModuleDescriptor);
+    defer shaderModule.release();
+
     pipelineDescriptor.vertex.shaderModule = shaderModule;
-    pipelineDescriptor.vertex.entryPoint = params.vertex_shader_params.entry_point;
+    pipelineDescriptor.vertex.entryPoint = (ZString) vertex_entry;
     pipelineDescriptor.vertex.constantCount = 0;
     pipelineDescriptor.vertex.constants = null;
 
@@ -177,7 +193,7 @@ $endif
     FragmentState fragmentState;
     fragmentState.next = null;
     fragmentState.shaderModule = shaderModule;
-    fragmentState.entryPoint = params.fragment_shader_params.entry_point;
+    fragmentState.entryPoint = (ZString) fragment_entry;
     fragmentState.constantCount = 0;
     fragmentState.constants = null;
     pipelineDescriptor.fragment = &fragmentState;
@@ -214,6 +230,8 @@ $endif
     pipelineDescriptor.multisample.count = 1;
     pipelineDescriptor.multisample.mask = ~0u;
     pipelineDescriptor.multisample.alphaToCoverageEnabled = CBool.FALSE;
+
+    pipelineDescriptor.layout = null;
 
     self.world_pipeline = self.device.createRenderPipeline(&pipelineDescriptor);
 }
@@ -289,6 +307,12 @@ fn void! WebGPUBackend.begin_frame(WebGPUBackend* self, double delta_time) @dyna
     self.frame_state.command_encoder = command_encoder;
 }
 
+fn void! WebGPUBackend.draw_frame(WebGPUBackend* self, double delta_time) @dynamic
+{
+    self.frame_state.renderpass.setPipeline(self.world_pipeline);
+    self.frame_state.renderpass.draw(3, 1, 0, 0);
+}
+
 fn void! WebGPUBackend.end_frame(WebGPUBackend* self, double delta_time) @dynamic
 {
     CommandBufferDescriptor bufferDescriptor;
@@ -310,6 +334,9 @@ fn void! WebGPUBackend.end_frame(WebGPUBackend* self, double delta_time) @dynami
 
 fn void! WebGPUBackend.shutdown(WebGPUBackend* self) @dynamic
 {
+    log::log(LogLevel.INFO, "Releasing world pipeline...")!;
+    self.world_pipeline.release();
+
     //self.device.poll(CBool.FALSE, null);
 
     log::log(LogLevel.INFO, "Releasing queue...")!;

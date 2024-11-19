@@ -16,29 +16,42 @@ enum SupportedBackend
     JS,
 }
 
-enum SupportedShaderFormats
+enum SupportedShaderFormat : int(String extension)
 {
-    WGSL,
-    SPIRV,
+    WGSL = ".wgsl",
+    SPIRV = ".spv",
 }
 
-enum SupportedShaderStages
+fn SupportedShaderFormat format_from_string(String format)
+{
+    switch (format)
+    {
+        case "wgsl":
+            return SupportedShaderFormat.WGSL;
+        case "spirv":
+            return SupportedShaderFormat.SPIRV;
+    }
+
+    return SupportedShaderFormat.WGSL;
+}
+
+enum SupportedShaderStage
 {
     VERTEX,
     FRAGMENT,
 }
 
-fn SupportedShaderStages stage_from_string(String stage)
+fn SupportedShaderStage stage_from_string(String stage)
 {
     switch (stage)
     {
         case "vertex":
-            return SupportedShaderStages.VERTEX;
+            return SupportedShaderStage.VERTEX;
         case "fragment":
-            return SupportedShaderStages.FRAGMENT;
+            return SupportedShaderStage.FRAGMENT;
     }
 
-    return SupportedShaderStages.VERTEX;
+    return SupportedShaderStage.VERTEX;
 }
 
 struct VertexShaderParams
@@ -60,11 +73,6 @@ struct RendererParams
     ZString device_label;
     usz swapchain_width;
     usz swapchain_height;
-
-    ZString shader_file;
-    SupportedShaderFormats shader_format;
-    VertexShaderParams vertex_shader_params;
-    FragmentShaderParams fragment_shader_params;
 }
 
 struct RenderPacket
@@ -105,6 +113,8 @@ fn void! RendererSystem.draw(RendererSystem* self, RenderPacket* packet) @dynami
     self.state.backend.begin_frame(packet.delta_time)!;
 
     self.state.backend.begin_renderpass(RenderPassType.WORLD)!;
+
+    self.state.backend.draw_frame(packet.delta_time)!;
 
     self.state.backend.end_renderpass(RenderPassType.WORLD)!;
 

@@ -13,7 +13,7 @@ import std::encoding::json;
 
 struct ShaderStageData
 {
-    SupportedShaderStages stage;
+    SupportedShaderStage stage;
     String entry;
     String source;
 }
@@ -22,6 +22,7 @@ struct ShaderData
 {
     String renderpass;
     String shader_file;
+    SupportedShaderFormat shader_format;
 
     List(<ShaderStageData>) stages;
 }
@@ -56,6 +57,8 @@ fn void! ShaderResourceLoaderFunctions.load(ShaderResourceLoaderFunctions* self,
     out_resource.size = io::file::get_size(path.path_string)!;
 
     char[] buffer = memory::kallocate_many(char, out_resource.size, MemoryTag.SHADER);
+    defer memory::kfree_many(buffer, char, out_resource.size, MemoryTag.SHADER)!!;
+
     io::file::load_buffer(path.path_string, buffer)!;
 
     Object* json = json::temp_parse_string((String) buffer[3..])!;
@@ -64,6 +67,7 @@ fn void! ShaderResourceLoaderFunctions.load(ShaderResourceLoaderFunctions* self,
     ShaderData* data = memory::kallocate(ShaderData, MemoryTag.SHADER)!;
     data.renderpass = json.get_string("renderpass")!.copy(memory::kallocator());
     data.shader_file = json.get_string("shader_file")!.copy(memory::kallocator());
+    data.shader_format = renderer::format_from_string(json.get_string("format")!);
 
     Object* stages = json.get("stages")!;
     usz count = stages.get_len();
@@ -106,4 +110,65 @@ fn ResourceLoader shader_resource_loader()
     loader.type_path = "shaders";
     loader.functions = (ResourceLoaderFunctions) &shader_loader_functions;
     return loader;
+}
+
+module kenzine::resources::shader;
+
+import kenzine::memory;
+import kenzine::resource;
+import kenzine::faults;
+import kenzine::renderer;
+import kenzine::utils;
+import std::io::path;
+import std::io::file;
+import std::collections::list;
+import std::collections::object;
+import std::encoding::json;
+
+fn String get_entry(Resource* resource, SupportedShaderStage stage)
+{
+    ShaderData* data = utils::slice_to_ptr(ShaderData, resource.data);
+
+    for (usz i = 0; i < data.stages.len(); i++)
+    {
+        if (data.stages[i].stage == stage)
+        {
+            return data.stages[i].entry;
+        }
+    }
+
+    return "";
+}
+
+// TODO: support for different formats and stages. Webgpu just has everything put inside the same file
+fn String! get_code(Resource* resource)
+{
+    ResourceLoader* loader = resource::get_loader(resource.type, resource.metadata.custom_type)!;
+
+    ShaderData* data = utils::slice_to_ptr(ShaderData, resource.data);
+
+    Path path = path::temp_new(resource::get_base_asset_path()!)!;
+    defer path.free();
+
+    DString descriptor_file = dstring::temp_new(data.shader_file);
+    defer descriptor_file.free();
+
+    if (!descriptor_file.str_view().ends_with(data.shader_format.extension))
+    {
+        descriptor_file.append(data.shader_format.extension);
+    }
+
+    path = path.new_append(loader.type_path)!;
+    path = path.new_append(descriptor_file.str_view())!;
+
+    File file = io::file::open(path.path_string, "r")!;
+    defer file.close()!!;
+
+    usz size = io::file::get_size(path.path_string)!;
+    char[] buffer = memory::kallocate_many(char, size, MemoryTag.SHADER);
+    defer memory::kfree_many(buffer, char, size, MemoryTag.SHADER)!!;
+
+    io::file::load_buffer(path.path_string, buffer)!;
+
+    return ((String) buffer[3..]).copy(memory::kallocator());
 }

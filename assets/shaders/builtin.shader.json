@@ -4,6 +4,7 @@
     "version": "1.0"
   },
   "renderpass": "world",
+  "format": "wgsl",
   "shader_file": "builtin.wgsl",
   "stages": [
     {
