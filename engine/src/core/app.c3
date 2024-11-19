@@ -129,11 +129,6 @@ $endif
 
     app.log_system.log(LogLevel.INFO, "Application initialized")!;
 
-    Resource resource;
-    app.resource_system.load(ResourceType.TEXT, "test.txt", &resource)!;
-    io::printfn("Resource data: %s\n", resource.as_string())!;
-    app.resource_system.unload(&resource)!;
-
     memory::log_memory_report()!;
 }
 

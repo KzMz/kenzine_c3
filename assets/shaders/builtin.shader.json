@@ -1,0 +1,20 @@
+﻿{
+  "resource": {
+    "type": "shader",
+    "version": "1.0"
+  },
+  "renderpass": "world",
+  "shader_file": "builtin.wgsl",
+  "stages": [
+    {
+      "stage": "vertex",
+      "entry": "vertex_main",
+      "source": ""
+    },
+    {
+      "stage": "fragment",
+      "entry": "fragment_main",
+      "source": ""
+    }
+  ]
+}

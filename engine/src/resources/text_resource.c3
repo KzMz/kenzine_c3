@@ -33,8 +33,6 @@ fn void! TextResourceLoaderFunctions.load(TextResourceLoaderFunctions* self, Res
 
     char[] buffer = memory::kallocate_many(char, out_resource.size, MemoryTag.TEXT);
     out_resource.data = io::file::load_buffer(path.path_string, buffer)!;
-
-    out_resource.size = out_resource.data.len;
 }
 
 fn void! TextResourceLoaderFunctions.unload(TextResourceLoaderFunctions* self, ResourceLoader* loader, Resource* resource) @dynamic
@@ -42,7 +40,7 @@ fn void! TextResourceLoaderFunctions.unload(TextResourceLoaderFunctions* self, R
     unload_resource(resource, MemoryTag.TEXT)!;
 }
 
-TextResourceLoaderFunctions loader_functions;
+TextResourceLoaderFunctions text_loader_functions @private;
 
 fn ResourceLoader text_resource_loader()
 {
@@ -50,6 +48,6 @@ fn ResourceLoader text_resource_loader()
     loader.type = ResourceType.TEXT;
     loader.custom_type = "";
     loader.type_path = "";
-    loader.functions = (ResourceLoaderFunctions) &loader_functions;
+    loader.functions = (ResourceLoaderFunctions) &text_loader_functions;
     return loader;
 }

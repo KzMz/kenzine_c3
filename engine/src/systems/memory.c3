@@ -15,6 +15,7 @@ enum MemoryTag : int(String description)
     APP = "APP\t",
     TEXTURE = "TEXTURE\t",
     TEXT = "TEXT\t",
+    SHADER = "SHADER\t",
     
     CUSTOM = "CUSTOM\t",
 }

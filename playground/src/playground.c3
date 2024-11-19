@@ -34,7 +34,7 @@ fn void main() @export("main") @wasm
             .backend_type = SupportedBackend.WEBGPU,
             .device_label = "WebGPU Device",
             .clear_color = common::Color { 0.9, 0.1, 0.2, 1.0 },
-            .shader_file = "shaders/shader.wgsl",
+            .shader_file = "assets/shaders/shader.wgsl",
             .vertex_shader_params = {
                 .entry_point = "vertex_main",
             },

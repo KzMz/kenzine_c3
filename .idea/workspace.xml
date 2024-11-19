@@ -19,36 +19,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7e407e46-1a75-47ef-a652-55354b4cdcdc" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/assets/test.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/engine/shaders/builtin.shader.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/engine/shaders/builtin.wgsl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/engine/src/resources/resource.c3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/engine/src/resources/resource_loader.c3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/engine/src/resources/text_resource.c3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/engine/src/systems/renderer/backends/js_backend.c3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/engine/src/systems/renderer/backends/webgpu_backend.c3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/engine/src/systems/resource.c3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/engine/src/thirdparty/wgpu-native/wgpu.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/engine/src/resources/shader_resource.c3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile.full.web.mak" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile.full.web.mak" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile.full.windows.mak" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile.full.windows.mak" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/common.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/common.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/shaders/builtin.shader.json" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/builtin.shader.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/shaders/builtin.wgsl" beforeDir="false" afterPath="$PROJECT_DIR$/assets/shaders/builtin.wgsl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/src/core/app.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/core/app.c3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/src/faults.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/faults.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/platform/platform_wasm.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/platform/platform_wasm.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/renderer/renderer_backend.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/renderer/renderer_backend.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/renderer/renderer_frontend.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/renderer/renderer.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/renderer/webgpu/webgpu_backend.c3" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/systems/log.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/log.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/resources/resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/resources/resource.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/resources/resource_loader.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/resources/resource_loader.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/resources/text_resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/resources/text_resource.c3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/src/systems/memory.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/memory.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/systems/renderer/renderer.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/renderer/renderer.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/systems/resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/resource.c3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/src/thirdparty/webgpu" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/thirdparty/webgpu" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/src/thirdparty/webgpu/adapter.c3i" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/thirdparty/webgpu/adapter.c3i" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/src/thirdparty/webgpu/device.c3i" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/thirdparty/webgpu/device.c3i" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/utils.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/utils.c3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/playground.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/playground.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/playground/src/playground.c3" beforeDir="false" afterPath="$PROJECT_DIR$/playground/src/playground.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/playground/web/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/playground/web/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/playground/web/kenzine.js" beforeDir="false" afterPath="$PROJECT_DIR$/playground/web/kenzine.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,6 +83,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Repos\kenzine_c3\assets" />
       <recent name="D:\Repos\kenzine_c3\engine\src\systems" />
       <recent name="D:\Repos\kenzine_c3\engine\src\renderer\backends" />
       <recent name="D:\Repos\kenzine_c3\engine\src\renderer" />
@@ -162,7 +151,8 @@
       <workItem from="1731383564089" duration="4493000" />
       <workItem from="1731435861231" duration="26807000" />
       <workItem from="1731779415804" duration="3397000" />
-      <workItem from="1731970406735" duration="8320000" />
+      <workItem from="1731970406735" duration="8613000" />
+      <workItem from="1731997586401" duration="5054000" />
     </task>
     <servers />
   </component>

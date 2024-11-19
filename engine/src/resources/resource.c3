@@ -1,19 +1,20 @@
 ﻿module kenzine::resources;
 
-enum ResourceType
+// TODO: multiple extensions per type
+enum ResourceType : int(String[] extensions, String json_type)
 {
-    UNKNOWN,
-    TEXT,
-    BINARY,
-    IMAGE,
-    SHADER,
-    CUSTOM
+    UNKNOWN = { {""}, "" },
+    TEXT = { {""}, "" },
+    BINARY = { {""}, "" },
+    IMAGE = { {".png", ".jpg", ".jpeg", ".bmp", ".tga"}, "" },
+    SHADER = { {".shader.json"}, "shader" },
+    CUSTOM = { {""}, "" },
 }
 
 struct ResourceMetadata
 {
-    String custom_type;
     String version;
+    String custom_type;
 }
 
 struct Resource

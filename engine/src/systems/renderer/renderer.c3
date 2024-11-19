@@ -22,6 +22,25 @@ enum SupportedShaderFormats
     SPIRV,
 }
 
+enum SupportedShaderStages
+{
+    VERTEX,
+    FRAGMENT,
+}
+
+fn SupportedShaderStages stage_from_string(String stage)
+{
+    switch (stage)
+    {
+        case "vertex":
+            return SupportedShaderStages.VERTEX;
+        case "fragment":
+            return SupportedShaderStages.FRAGMENT;
+    }
+
+    return SupportedShaderStages.VERTEX;
+}
+
 struct VertexShaderParams
 {
     ZString entry_point;

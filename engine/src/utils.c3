@@ -25,3 +25,13 @@ fn String size_string(usz size)
 
     return "0 B";
 }
+
+macro ptr_to_slice($PtrType, $SliceType, ptr)
+{
+    return (($SliceType*) ptr)[0..$PtrType.sizeof];
+}
+
+macro slice_to_ptr($PtrType, slice)
+{
+    return ($PtrType*) slice.ptr;
+}
