@@ -31,5 +31,10 @@ struct Resource
 
 fn String Resource.as_string(Resource* self)
 {
+    if (self.data.len <= 3)
+    {
+        return "";
+    }
+
     return (String) self.data[3..]; // for some reason I have some garbage data at the beginning of the buffer, chop it
 }

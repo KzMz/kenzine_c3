@@ -8,6 +8,7 @@ import std::io::os;
 
 // Thanks to rexim https://github.com/c3lang/c3c/pull/1440
 extern fn void wasm_write(void* buffer, usz buffer_len) @if($feature(PLATFORM_WEB));
+extern fn void wasm_load_resource(char* path, usz len) @if($feature(PLATFORM_WEB)) @extern("wasm_load_resource");
 
 extern fn void app_set_title(char* title, usz len) @if($feature(PLATFORM_WEB)) @extern("app_set_title");
 extern fn void canvas_resize(usz width, usz height) @if($feature(PLATFORM_WEB)) @extern("canvas_resize");
@@ -18,9 +19,11 @@ extern fn void renderer_set_clear_color(float r, float g, float b, float a) @if(
 extern fn void renderer_initialize() @extern("renderer_initialize") @if($feature(PLATFORM_WEB));
 extern fn void renderer_shutdown() @extern("renderer_shutdown") @if($feature(PLATFORM_WEB));
 extern fn void renderer_begin_frame(double delta_time) @extern("renderer_begin_frame") @if($feature(PLATFORM_WEB));
+extern fn void renderer_draw_frame(double delta_time) @extern("renderer_draw_frame") @if($feature(PLATFORM_WEB));
 extern fn void renderer_end_frame(double delta_time) @extern("renderer_end_frame") @if($feature(PLATFORM_WEB));
 extern fn void renderer_begin_renderpass(int type) @extern("renderer_begin_renderpass") @if($feature(PLATFORM_WEB));
 extern fn void renderer_end_renderpass(int type) @extern("renderer_end_renderpass") @if($feature(PLATFORM_WEB));
+
 
 fn void initialize_wasm(Game* game) @if($feature(PLATFORM_WEB))
 {

@@ -19,7 +19,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7e407e46-1a75-47ef-a652-55354b4cdcdc" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/platform/platform_wasm.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/platform/platform_wasm.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/resources/resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/resources/resource.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/resources/text_resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/resources/text_resource.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/systems/memory.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/memory.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/systems/renderer/backends/js_backend.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/renderer/backends/js_backend.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/utils.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/utils.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/playground/web/kenzine.js" beforeDir="false" afterPath="$PROJECT_DIR$/playground/web/kenzine.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,6 +52,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
     &quot;Batch.build-web.executor&quot;: &quot;Run&quot;,
     &quot;Batch.build.executor&quot;: &quot;Run&quot;,
     &quot;Native Application.Playground.executor&quot;: &quot;Run&quot;,
@@ -74,7 +83,7 @@
       <recent name="D:\Repos\kenzine_c3\engine\src" />
     </key>
   </component>
-  <component name="RunManager" selected="Batch.build">
+  <component name="RunManager" selected="Batch.build-web">
     <configuration name="build-web" type="BatchConfigurationType" factoryName="Batch" temporary="true">
       <module name="kenzine_c3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -115,8 +124,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Batch.build" />
         <item itemvalue="Batch.build-web" />
+        <item itemvalue="Batch.build" />
       </list>
     </recent_temporary>
   </component>
@@ -138,7 +147,8 @@
       <workItem from="1731970406735" duration="8613000" />
       <workItem from="1731997586401" duration="5054000" />
       <workItem from="1732031160018" duration="23000" />
-      <workItem from="1732031496962" duration="5070000" />
+      <workItem from="1732031496962" duration="11040000" />
+      <workItem from="1732074947584" duration="622000" />
     </task>
     <servers />
   </component>

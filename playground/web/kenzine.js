@@ -47,6 +47,18 @@ class Kenzine {
             wasm_write: (buffer, len) => {
                 console.log(read_string_from_memory(this.wasm, buffer, len));
             },
+            wasm_load_resource: async (buffer, len) => {
+                const path = read_string_from_memory(this.wasm, buffer, len);
+
+                const response = await fetch(path);
+                const array = new Uint8ClampedArray(await response.arrayBuffer());
+
+                const data_ptr = this.wasm.instance.exports.allocate(array.length, 7);
+                const data = new Uint8ClampedArray(this.wasm.instance.exports.memory.buffer, data_ptr, array.length);
+                data.set(array);
+
+                this.wasm.instance.exports.on_resource_loaded(data_ptr, array.length);
+            },
             app_set_title: (buffer, len) => {
                 this.title = read_string_from_memory(this.wasm, buffer, len);
             },
@@ -70,6 +82,9 @@ class Kenzine {
             },
             renderer_begin_frame: async (delta_time) => {
                 await this.begin_frame(delta_time);
+            },
+            renderer_draw_frame: async (delta_time) => {
+                await this.draw_frame(delta_time);
             },
             renderer_end_frame: async (delta_time) => {
                 await this.end_frame(delta_time);
@@ -144,6 +159,10 @@ class Kenzine {
 
     async begin_frame(delta_time) {
         this.encoder = this.device.createCommandEncoder();
+    }
+
+    async draw_frame(delta_time) {
+
     }
 
     async end_frame(delta_time) {

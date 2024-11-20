@@ -16,6 +16,7 @@ enum MemoryTag : int(String description)
     TEXTURE = "TEXTURE\t",
     TEXT = "TEXT\t",
     SHADER = "SHADER\t",
+    WASM = "WASM\t",
     
     CUSTOM = "CUSTOM\t",
 }
@@ -116,7 +117,7 @@ fn usz MemorySystem.get_state_size(MemorySystem* self) @dynamic
     return MemoryState.sizeof;
 }
 
-fn void*! allocate(usz size, MemoryTag tag)
+fn void*! allocate(usz size, MemoryTag tag) @wasm @export("allocate")
 {
     if (memory_state == null)
     {
@@ -134,7 +135,7 @@ fn void*! allocate(usz size, MemoryTag tag)
     return ptr;
 }
 
-fn void*! resize(usz size, void* ptr, MemoryTag tag)
+fn void*! resize(usz size, void* ptr, MemoryTag tag) @wasm @export("resize")
 {
     if (memory_state == null)
     {
@@ -151,7 +152,7 @@ fn void*! resize(usz size, void* ptr, MemoryTag tag)
     return new_ptr;
 }
 
-fn void! free(void* ptr, usz size, MemoryTag tag)
+fn void! free(void* ptr, usz size, MemoryTag tag) @wasm @export("free")
 {
     if (memory_state == null)
     {

@@ -26,6 +26,11 @@ fn String size_string(usz size)
     return "0 B";
 }
 
+macro ptr_to_slice_string(ptr, size)
+{
+    return ((char*) ptr)[0..size];
+}
+
 macro ptr_to_slice($PtrType, $SliceType, ptr)
 {
     return (($SliceType*) ptr)[0..$PtrType.sizeof];

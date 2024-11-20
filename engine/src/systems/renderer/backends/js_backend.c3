@@ -3,6 +3,10 @@
 import kenzine::common;
 import kenzine::platform::wasm;
 
+import kenzine::resource;
+import kenzine::resources;
+import kenzine::log;
+
 struct JSBackend(RendererBackend)
 {
     bool dummy;
@@ -32,7 +36,9 @@ $endif
 
 fn void! JSBackend.draw_frame(JSBackend* self, double delta_time) @dynamic
 {
-
+$if($feature(PLATFORMWEB)):
+    wasm::renderer_draw_frame(delta_time);
+$endif
 }
 
 fn void! JSBackend.end_frame(JSBackend* self, double delta_time) @dynamic
