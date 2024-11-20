@@ -6,6 +6,8 @@ Just run "build.bat" for native build and build-web.bat for web build
 
 ## TODO
 - [x] First native triangle!
+- [ ] Resource Cache
+- [ ] Resource Embed
 - [ ] First wasm triangle!
 - [ ] Material asset definition and loader
 - [ ] Test hard-coded 3d rendering
