@@ -172,11 +172,10 @@ $endif
     ShaderModuleWGSLDescriptor shaderModuleWGSLDescriptor;
     shaderModuleWGSLDescriptor.chain.next = null;
     shaderModuleWGSLDescriptor.chain.sType = SType.SHADER_MODULE_WGSL_DESCRIPTOR;
-    shaderModuleWGSLDescriptor.code = (ZString) code;
+    shaderModuleWGSLDescriptor.code = (ZString) (code.copy());
     shaderModuleDescriptor.next = &shaderModuleWGSLDescriptor.chain;
 
     ShaderModule shaderModule = self.device.createShaderModule(&shaderModuleDescriptor);
-    defer shaderModule.release();
 
     pipelineDescriptor.vertex.shaderModule = shaderModule;
     pipelineDescriptor.vertex.entryPoint = (ZString) vertex_entry;
@@ -234,6 +233,7 @@ $endif
     pipelineDescriptor.layout = null;
 
     self.world_pipeline = self.device.createRenderPipeline(&pipelineDescriptor);
+    shaderModule.release();
 }
 
 fn TextureView WebGPUBackend.get_next_surface_texture_view(WebGPUBackend* self)
@@ -367,8 +367,7 @@ fn void! WebGPUBackend.shutdown(WebGPUBackend* self) @dynamic
 
 fn void! WebGPUBackend.print_adapter_info(WebGPUBackend* self)
 {
-    DString report = dstring::new();
-    defer report.free();
+    DString report = dstring::temp_new();
 
     report.append("\n\nWebGPU Adapter Report\n");
 
@@ -432,8 +431,7 @@ fn void! WebGPUBackend.print_adapter_info(WebGPUBackend* self)
 
 fn void! WebGPUBackend.print_device_info(WebGPUBackend* self)
 {
-    DString report = dstring::new();
-    defer report.free();
+    DString report = dstring::temp_new();
 
     report.append("\n\nWebGPU Device Report\n");
 

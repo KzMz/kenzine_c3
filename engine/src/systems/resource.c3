@@ -1,6 +1,7 @@
 ﻿module kenzine::resource;
 
 import kenzine::resources;
+import kenzine::resources::cache;
 import kenzine::core;
 import kenzine::memory;
 import kenzine::faults;
@@ -8,6 +9,7 @@ import kenzine::app;
 import kenzine::log;
 import kenzine::utils;
 import std::collections::list;
+import std::io;
 
 struct ResourceState
 {
@@ -49,6 +51,8 @@ fn void! ResourceSystem.initialize(ResourceSystem* self, ResourceState* state, R
         return ResourceSystemError.BASE_ASSET_PATH_EMPTY?;
     }
 
+    //cache::initialize();
+
     self.state.config = *params;
     self.state.resource_loaders.new_init(params.max_loaders, memory::kallocator());
 
@@ -58,6 +62,8 @@ fn void! ResourceSystem.initialize(ResourceSystem* self, ResourceState* state, R
 fn void! ResourceSystem.shutdown(ResourceSystem* self) @dynamic
 {
     self.state.resource_loaders.free();
+
+    //cache::shutdown();
 }
 
 fn void! ResourceSystem.register_default_loaders(ResourceSystem* self)

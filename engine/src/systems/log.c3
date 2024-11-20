@@ -53,8 +53,7 @@ fn void! LogSystem.initialize(LogSystem* self, LogState* state, LogParams* param
 $if($feature(PLATFORM_WEB)):
 
 $else
-    Path log_path = io::path::new(params.log_folder)!;
-    defer log_path.free();
+    Path log_path = io::path::temp_new(params.log_folder)!;
 
     if (!io::path::exists(log_path))
     {

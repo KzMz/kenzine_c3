@@ -36,5 +36,5 @@ fn String Resource.as_string(Resource* self)
         return "";
     }
 
-    return (String) self.data[3..]; // for some reason I have some garbage data at the beginning of the buffer, chop it
+    return (String) self.data;
 }

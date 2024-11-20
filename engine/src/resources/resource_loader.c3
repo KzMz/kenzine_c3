@@ -1,8 +1,10 @@
 ﻿module kenzine::resources;
 
+import kenzine::log;
 import kenzine::memory;
 import kenzine::faults;
 import std::collections::object;
+import std::io::file;
 
 interface ResourceLoaderFunctions
 {
@@ -45,4 +47,46 @@ fn ResourceMetadata! get_resource_metadata_checked(Object* json, ResourceType ty
     }
 
     return metadata;
+}
+
+fn MemoryTag get_memory_tag(ResourceType type)
+{
+    switch (type)
+    {
+        case ResourceType.TEXT:
+            return MemoryTag.TEXT;
+        case ResourceType.SHADER:
+            return MemoryTag.SHADER;
+        case ResourceType.IMAGE:
+            return MemoryTag.TEXTURE;
+        case ResourceType.CUSTOM:
+            return MemoryTag.CUSTOM;
+        default:
+            return MemoryTag.NONE;
+    }
+}
+
+fn char[]! get_resource_file_contents(String path, ResourceType type)
+{
+    char[]! cached = cache::get(path);
+    if (try cached)
+    {
+        return cached;
+    }
+
+$if(!$feature(PLATFORM_WEB)):
+    File file = io::file::open(path, "r")!;
+    defer file.close()!!;
+
+    usz size = io::file::get_size(path)!;
+    char[] buffer = memory::kallocate_many(char, size, get_memory_tag(type));
+    cache::add(path, buffer);
+
+    io::file::load_buffer(path, buffer)!;
+
+    log::log(LogLevel.INFO, "Loaded resource %s of size %d", path, size)!;
+    return buffer[3..]; // for some reason I have some garbage data at the beginning of the buffer, chop it
+$else
+    return null;
+$endif
 }

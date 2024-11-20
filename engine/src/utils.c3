@@ -10,8 +10,7 @@ enum ByteSize : int(usz byte_size, String unit)
 
 fn String size_string(usz size)
 {
-    DString result = dstring::new();
-    defer result.free();
+    DString result = dstring::temp_new();
 
     for (int i = 0; i < ByteSize.elements; ++i)
     {

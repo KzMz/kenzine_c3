@@ -6,6 +6,7 @@ import kenzine::app;
 import kenzine::log;
 import kenzine::utils;
 import std::collections::map;
+import std::io;
 
 enum MemoryTag : int(String description)
 {
@@ -17,6 +18,7 @@ enum MemoryTag : int(String description)
     TEXT = "TEXT\t",
     SHADER = "SHADER\t",
     WASM = "WASM\t",
+    BINARY = "BINARY\t",
     
     CUSTOM = "CUSTOM\t",
 }
@@ -214,9 +216,7 @@ fn void! log_memory_report()
         return SystemError.STATE_IS_NULL?;
     }
 
-    DString report = dstring::new();
-    defer report.free();
-
+    DString report = dstring::temp_new();
     usz size = memory_state.total_size;
 
     report.append("\n\nMemory Report\n");

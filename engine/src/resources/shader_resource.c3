@@ -35,39 +35,28 @@ struct ShaderResourceLoaderFunctions(ResourceLoaderFunctions)
 fn void! ShaderResourceLoaderFunctions.load(ShaderResourceLoaderFunctions* self, ResourceLoader* loader, String name, Resource* out_resource) @dynamic
 {
     Path path = path::temp_new(resource::get_base_asset_path()!)!;
-    defer path.free();
 
     DString descriptor_file = dstring::temp_new(name);
-    defer descriptor_file.free();
-
-    descriptor_file.append(ResourceType.SHADER.extensions[0]);
+    descriptor_file.append(loader.type.extensions[0]);
 
     path = path.new_append(loader.type_path)!;
     path = path.new_append(descriptor_file.str_view())!;
 
-    File file = io::file::open(path.path_string, "r")!;
-    defer file.close()!!;
-
     out_resource.type = loader.type;
     out_resource.name = name;
 
-    memory::kenzine_allocator.current_tag = memory::MemoryTag.SHADER;
+    memory::kenzine_allocator.current_tag = resources::get_memory_tag(loader.type);
     out_resource.path = path.path_string.copy(memory::kallocator());
 
-    out_resource.size = io::file::get_size(path.path_string)!;
+    char[] buffer = resources::get_resource_file_contents(path.path_string, loader.type)!;
 
-    char[] buffer = memory::kallocate_many(char, out_resource.size, MemoryTag.SHADER);
-    defer memory::kfree_many(buffer, char, out_resource.size, MemoryTag.SHADER)!!;
-
-    io::file::load_buffer(path.path_string, buffer)!;
-
-    Object* json = json::temp_parse_string((String) buffer[3..])!;
+    Object* json = json::temp_parse_string((String) buffer)!;
     out_resource.metadata = get_resource_metadata_checked(json, loader.type)!;
 
-    ShaderData* data = memory::kallocate(ShaderData, MemoryTag.SHADER)!;
-    data.renderpass = json.get_string("renderpass")!.copy(memory::kallocator());
-    data.shader_file = json.get_string("shader_file")!.copy(memory::kallocator());
+    ShaderData* data = memory::kallocate(ShaderData, resources::get_memory_tag(loader.type))!;
+    data.renderpass = json.get_string("renderpass")!;//.copy(memory::kallocator());
     data.shader_format = renderer::format_from_string(json.get_string("format")!);
+    data.shader_file = json.get_string("shader_file")!;//.copy(memory::kallocator());
 
     Object* stages = json.get("stages")!;
     usz count = stages.get_len();
@@ -77,10 +66,10 @@ fn void! ShaderResourceLoaderFunctions.load(ShaderResourceLoaderFunctions* self,
         Object* stage = stages.get_at(i);
         ShaderStageData stage_data;
         stage_data.stage = renderer::stage_from_string(stage.get_string("stage")!);
-        stage_data.entry = stage.get_string("entry")!.copy(memory::kallocator());
+        stage_data.entry = stage.get_string("entry")!;//.copy(memory::kallocator());
 
         String source = stage.get_string("source")!;
-        stage_data.source = source.copy(memory::kallocator());
+        stage_data.source = source;//source.copy(memory::kallocator());
 
         data.stages.push(stage_data);
     }
@@ -90,6 +79,7 @@ fn void! ShaderResourceLoaderFunctions.load(ShaderResourceLoaderFunctions* self,
     memory::kenzine_allocator.current_tag = memory::MemoryTag.CUSTOM;
 
     out_resource.data = utils::ptr_to_slice(ShaderData, char, data);
+    out_resource.size = ShaderData.sizeof;
 }
 
 fn void! ShaderResourceLoaderFunctions.unload(ShaderResourceLoaderFunctions* self, ResourceLoader* loader, Resource* resource) @dynamic
@@ -97,7 +87,7 @@ fn void! ShaderResourceLoaderFunctions.unload(ShaderResourceLoaderFunctions* sel
     ShaderData* data = utils::slice_to_ptr(ShaderData, resource.data);
     data.stages.clear();
 
-    unload_resource(resource, MemoryTag.SHADER)!;
+    unload_resource(resource, resources::get_memory_tag(loader.type))!;
 }
 
 ShaderResourceLoaderFunctions shader_loader_functions;
@@ -148,10 +138,7 @@ fn String! get_code(Resource* resource)
     ShaderData* data = utils::slice_to_ptr(ShaderData, resource.data);
 
     Path path = path::temp_new(resource::get_base_asset_path()!)!;
-    defer path.free();
-
     DString descriptor_file = dstring::temp_new(data.shader_file);
-    defer descriptor_file.free();
 
     if (!descriptor_file.str_view().ends_with(data.shader_format.extension))
     {
@@ -164,11 +151,6 @@ fn String! get_code(Resource* resource)
     File file = io::file::open(path.path_string, "r")!;
     defer file.close()!!;
 
-    usz size = io::file::get_size(path.path_string)!;
-    char[] buffer = memory::kallocate_many(char, size, MemoryTag.SHADER);
-    defer memory::kfree_many(buffer, char, size, MemoryTag.SHADER)!!;
-
-    io::file::load_buffer(path.path_string, buffer)!;
-
-    return ((String) buffer[3..]).copy(memory::kallocator());
+    char[] buffer = resources::get_resource_file_contents(path.path_string, loader.type)!;
+    return ((String) buffer);//.copy(memory::kallocator());
 }
