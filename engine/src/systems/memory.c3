@@ -8,6 +8,8 @@ import kenzine::utils;
 import std::collections::map;
 import std::io;
 
+const usz MAX_SINGLE_ALLOCATION_SIZE = 1000000;
+
 enum MemoryTag : int(String description)
 {
     NONE = "UNTAGGED",
@@ -36,8 +38,6 @@ struct MemoryState
     usz total_allocations;
 
     TaggedMemory[MemoryTag.len] tagged_memory;
-
-    HashMap(<void*, usz>) allocations;
 }
 
 struct MemoryParams
@@ -52,6 +52,7 @@ struct MemorySystem(CoreSystem)
 }
 
 MemoryState* memory_state = null;
+HashMap(<long, usz>) allocations;
 
 struct KenzineAllocator(Allocator)
 {
@@ -71,7 +72,7 @@ fn void*! KenzineAllocator.resize(KenzineAllocator* self, void* ptr, usz size, u
 fn void KenzineAllocator.release(KenzineAllocator* self, void* ptr, bool aligned) @dynamic
 {
     // see if it makes sense to do this inside free() directly
-    usz size = memory_state.allocations.get(ptr)!!;
+    usz size = allocations.get((long) ptr)!!;
     free(ptr, size, self.current_tag)!!;
 }
 
@@ -93,7 +94,7 @@ fn void! MemorySystem.initialize(MemorySystem* self, MemoryState* state, MemoryP
         return SystemError.PARAMS_IS_NULL?;
     }
 
-    self.state.allocations.new_init();
+    allocations.init(allocator::heap());
 
     self.state.total_size = 0;
     self.state.total_allocations = 0;
@@ -110,8 +111,8 @@ fn void! MemorySystem.shutdown(MemorySystem* self) @dynamic
 {
     // TODO: destroy all arena and allocators if necessary
 
-    self.state.allocations.clear();
-    self.state.allocations.free();
+    allocations.clear();
+    allocations.free();
 }
 
 fn usz MemorySystem.get_state_size(MemorySystem* self) @dynamic
@@ -121,6 +122,11 @@ fn usz MemorySystem.get_state_size(MemorySystem* self) @dynamic
 
 fn void*! allocate(usz size, MemoryTag tag) @wasm @export("allocate")
 {
+    if (size == 0 || size == usz.max || size > MAX_SINGLE_ALLOCATION_SIZE)
+    {
+        return null;
+    }
+
     if (memory_state == null)
     {
         return allocator::heap().acquire(size, AllocInitType.ZERO)!;
@@ -133,7 +139,7 @@ fn void*! allocate(usz size, MemoryTag tag) @wasm @export("allocate")
     memory_state.tagged_memory[tag].total_size += size;
     memory_state.tagged_memory[tag].num_allocations++;
 
-    memory_state.allocations.set(ptr, size);
+    allocations.set((long) ptr, size);
     return ptr;
 }
 
@@ -144,22 +150,42 @@ fn void*! resize(usz size, void* ptr, MemoryTag tag) @wasm @export("resize")
         return allocator::heap().resize(ptr, size)!;
     }
 
-    usz old_size = memory_state.allocations.get(ptr)!;
+    usz old_size = allocations.get((long) ptr)!;
     void* new_ptr = memory_state.tagged_memory[tag].allocator.resize(ptr, size)!;
 
     usz size_diff = size - old_size;
     memory_state.total_size += size_diff;
     memory_state.tagged_memory[tag].total_size += size_diff;
 
+    allocations.remove((long) ptr);
+    allocations.set((long) new_ptr, size);
+
     return new_ptr;
 }
 
 fn void! free(void* ptr, usz size, MemoryTag tag) @wasm @export("free")
 {
+    if (ptr == null)
+    {
+        return;
+    }
+
+    if (size == 0 || size == usz.max || size > MAX_SINGLE_ALLOCATION_SIZE)
+    {
+        return;
+    }
+
     if (memory_state == null)
     {
         return allocator::heap().release(ptr, false);
     }
+
+    if (!allocations.has_key((long) ptr))
+    {
+        return;
+    }
+
+    allocations.remove((long) ptr);
 
     memory_state.tagged_memory[tag].allocator.release(ptr, false);
 
@@ -167,8 +193,6 @@ fn void! free(void* ptr, usz size, MemoryTag tag) @wasm @export("free")
     memory_state.total_allocations--;
     memory_state.tagged_memory[tag].total_size -= size;
     memory_state.tagged_memory[tag].num_allocations--;
-
-    memory_state.allocations.remove(ptr);
 }
 
 macro kallocate($Type, tag)
@@ -192,7 +216,7 @@ macro kallocate_many($Type, count, tag)
     memory_state.tagged_memory[tag].total_size += size;
     memory_state.tagged_memory[tag].num_allocations++;
 
-    memory_state.allocations.set(&slice[0], size);
+    allocations.set((long) &slice[0], size);
 
     return slice;
 }

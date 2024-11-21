@@ -194,6 +194,8 @@ fn void! Application.shutdown(Application* self)
     app.game.shutdown()!;
     memory::free(app.game.state, app.game.state_size, MemoryTag.GAME)!;
 
+    io::printfn("Shutting down application")!;
+
     app.running = false;
     app.suspended = false;
 

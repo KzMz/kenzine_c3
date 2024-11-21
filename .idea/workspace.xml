@@ -18,16 +18,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7e407e46-1a75-47ef-a652-55354b4cdcdc" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/tools/embedder.c3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/resources/resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/resources/resource.c3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile.full.windows.mak" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile.full.windows.mak" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/core/app.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/core/app.c3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/src/resources/resource_loader.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/resources/resource_loader.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/resources/shader_resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/resources/shader_resource.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/resources/text_resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/resources/text_resource.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/systems/log.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/log.c3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/src/systems/memory.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/memory.c3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/src/systems/renderer/backends/webgpu_backend.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/renderer/backends/webgpu_backend.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/systems/resource.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/systems/resource.c3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/utils.c3" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/utils.c3" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,7 +80,7 @@
       <recent name="D:\Repos\kenzine_c3\engine\src" />
     </key>
   </component>
-  <component name="RunManager" selected="Batch.build">
+  <component name="RunManager" selected="Batch.build-web">
     <configuration name="build-web" type="BatchConfigurationType" factoryName="Batch" temporary="true">
       <module name="kenzine_c3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -124,8 +121,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Batch.build" />
         <item itemvalue="Batch.build-web" />
+        <item itemvalue="Batch.build" />
       </list>
     </recent_temporary>
   </component>

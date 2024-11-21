@@ -6,6 +6,7 @@ import webgpu::wgpu;
 import kenzine::common;
 import kenzine::log;
 import kenzine::platform;
+import kenzine::memory;
 
 // TEMP
 import kenzine::resource;
@@ -172,7 +173,7 @@ $endif
     ShaderModuleWGSLDescriptor shaderModuleWGSLDescriptor;
     shaderModuleWGSLDescriptor.chain.next = null;
     shaderModuleWGSLDescriptor.chain.sType = SType.SHADER_MODULE_WGSL_DESCRIPTOR;
-    shaderModuleWGSLDescriptor.code = (ZString) (code.copy());
+    shaderModuleWGSLDescriptor.code = (ZString) code;
     shaderModuleDescriptor.next = &shaderModuleWGSLDescriptor.chain;
 
     ShaderModule shaderModule = self.device.createShaderModule(&shaderModuleDescriptor);
@@ -233,7 +234,13 @@ $endif
     pipelineDescriptor.layout = null;
 
     self.world_pipeline = self.device.createRenderPipeline(&pipelineDescriptor);
+
     shaderModule.release();
+
+    memory::kfree_many(code.ptr - 3, char, (code.len + 3), MemoryTag.SHADER)!;
+
+    // TEMP
+    resource::unload(&shader)!;
 }
 
 fn TextureView WebGPUBackend.get_next_surface_texture_view(WebGPUBackend* self)

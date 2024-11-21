@@ -68,25 +68,27 @@ fn MemoryTag get_memory_tag(ResourceType type)
 
 fn char[]! get_resource_file_contents(String path, ResourceType type)
 {
+$if(!$feature(PLATFORM_WEB)):
     char[]! cached = cache::get(path);
     if (try cached)
     {
+        log::log(LogLevel.INFO, "Loading resource %s from cache", path)!;
         return cached;
     }
 
-$if(!$feature(PLATFORM_WEB)):
     File file = io::file::open(path, "r")!;
     defer file.close()!!;
 
     usz size = io::file::get_size(path)!;
-    char[] buffer = memory::kallocate_many(char, size, get_memory_tag(type));
+    char[] buffer = memory::kallocate_many(char, size + 1, get_memory_tag(type));
     cache::add(path, buffer);
 
     io::file::load_buffer(path, buffer)!;
+    buffer[size] = 0;
 
     log::log(LogLevel.INFO, "Loaded resource %s of size %d", path, size)!;
     return buffer[3..]; // for some reason I have some garbage data at the beginning of the buffer, chop it
 $else
-    return null;
+    return cache::get(path)!;
 $endif
 }
