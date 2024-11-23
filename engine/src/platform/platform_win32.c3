@@ -9,11 +9,6 @@ double clock_frequency = 0.0;
 
 fn void! open_window(String title, uint width, uint height, uint x, uint y) @if(env::WIN32)
 {
-    if (platform::platform == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     if (platform::platform.hwnd_class_name == null)
     {
         platform::platform.hwnd_class_name = String.to_new_utf16("KenzineWindowClass").ptr!!;

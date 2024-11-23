@@ -133,6 +133,11 @@ fn String get_entry(Resource* resource, SupportedShaderStage stage)
 // TODO: support for different formats and stages. Webgpu just has everything put inside the same file
 fn String! get_code(Resource* resource)
 {
+    if (resource.type != ResourceType.SHADER)
+    {
+        return ResourceSystemError.RESOURCE_INVALID_TYPE?;
+    }
+
     ResourceLoader* loader = resource::get_loader(resource.type, resource.metadata.custom_type)!;
 
     ShaderData* data = utils::slice_to_ptr(ShaderData, resource.data);
@@ -147,9 +152,6 @@ fn String! get_code(Resource* resource)
 
     path = path.new_append(loader.type_path)!;
     path = path.new_append(descriptor_file.str_view())!;
-
-    File file = io::file::open(path.path_string, "r")!;
-    defer file.close()!!;
 
     char[] buffer = resources::get_resource_file_contents(path.path_string, loader.type)!;
     return ((String) buffer);//.copy(memory::kallocator());

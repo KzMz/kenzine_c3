@@ -1,5 +1,7 @@
 ﻿module kenzine::resources;
 
+import kenzine::memory;
+
 // TODO: multiple extensions per type
 enum ResourceType : int(String[] extensions, String json_type)
 {
@@ -37,4 +39,23 @@ fn String Resource.as_string(Resource* self)
     }
 
     return (String) self.data;
+}
+
+fn Resource* new(String resource_name, ResourceType type)
+{
+    if (type == ResourceType.UNKNOWN)
+    {
+        return null;
+    }
+
+    if (resource_name.len == 0)
+    {
+        return null;
+    }
+
+    Resource* resource = memory::kallocate(Resource, get_memory_tag(type))!!;
+    resource.type = type;
+    resource.name = resource_name;
+
+    return resource;
 }

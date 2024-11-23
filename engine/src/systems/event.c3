@@ -51,24 +51,15 @@ struct EventState
     EventEntry[256] entries;
 }
 
-def CoreSystem = kenzine::core::System(<EventState, EventParams>);
-struct EventSystem(CoreSystem)
+struct EventSystem(kenzine::core::System(<EventParams>))
 {
-    EventState* state;
+    bool dummy;
 }
 
-EventState* event_state = null;
+EventState event_state;
 
-fn void! EventSystem.initialize(EventSystem* self, EventState* state, EventParams* params) @dynamic
+fn void! EventSystem.initialize(EventSystem* self, EventParams* params) @dynamic
 {
-    self.state = state;
-    event_state = self.state;
-
-    if (self.state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     if (params == null)
     {
         return SystemError.PARAMS_IS_NULL?;
@@ -87,11 +78,6 @@ fn usz EventSystem.get_state_size(EventSystem* self) @dynamic
 
 fn void! subscribe(int code, void* listener, EventCallback callback)
 {
-    if (event_state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     EventEntry* entry = &event_state.entries[code];
     for (int i = 0; i < entry.subscriptions.len; i++)
     {
@@ -116,11 +102,6 @@ fn void! EventSystem.subscribe(EventSystem* self, int code, void* listener, Even
 
 fn void! unsubscribe(int code, void* listener)
 {
-    if (event_state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     EventEntry* entry = &event_state.entries[code];
     for (int i = 0; i < entry.subscriptions.len; i++)
     {
@@ -140,11 +121,6 @@ fn void! EventSystem.unsubscribe(EventSystem* self, int code, void* listener) @d
 
 fn void! trigger(int code, void* sender, EventData event_data)
 {
-    if (event_state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     EventEntry* entry = &event_state.entries[code];
     for (int i = 0; i < entry.subscriptions.len; i++)
     {

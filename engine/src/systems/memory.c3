@@ -45,13 +45,12 @@ struct MemoryParams
     Allocator default_allocator;
 }
 
-def CoreSystem = kenzine::core::System(<MemoryState, MemoryParams>);
-struct MemorySystem(CoreSystem)
+struct MemorySystem(kenzine::core::System(<MemoryParams>))
 {
-    MemoryState* state;
+    bool dummy;
 }
 
-MemoryState* memory_state = null;
+MemoryState memory_state;
 HashMap(<long, usz>) allocations;
 
 struct KenzineAllocator(Allocator)
@@ -77,17 +76,11 @@ fn void KenzineAllocator.release(KenzineAllocator* self, void* ptr, bool aligned
 }
 
 KenzineAllocator kenzine_allocator;
+Allocator default_allocator;
 
-fn void! MemorySystem.initialize(MemorySystem* self, MemoryState* state, MemoryParams* params) @dynamic
+fn void! MemorySystem.initialize(MemorySystem* self, MemoryParams* params) @dynamic
 {
     kenzine_allocator.current_tag = MemoryTag.CUSTOM;
-    memory_state = state;
-
-    self.state = state;
-    if (self.state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
 
     if (params == null)
     {
@@ -96,15 +89,17 @@ fn void! MemorySystem.initialize(MemorySystem* self, MemoryState* state, MemoryP
 
     allocations.init(allocator::heap());
 
-    self.state.total_size = 0;
-    self.state.total_allocations = 0;
+    memory_state.total_size = 0;
+    memory_state.total_allocations = 0;
 
     for (int i = 0; i < MemoryTag.len; i++)
     {
-        self.state.tagged_memory[i].total_size = 0;
-        self.state.tagged_memory[i].num_allocations = 0;
-        self.state.tagged_memory[i].allocator = params.default_allocator;
+        memory_state.tagged_memory[i].total_size = 0;
+        memory_state.tagged_memory[i].num_allocations = 0;
+        memory_state.tagged_memory[i].allocator = params.default_allocator;
     }
+
+    default_allocator = params.default_allocator;
 }
 
 fn void! MemorySystem.shutdown(MemorySystem* self) @dynamic
@@ -120,19 +115,14 @@ fn usz MemorySystem.get_state_size(MemorySystem* self) @dynamic
     return MemoryState.sizeof;
 }
 
-fn void*! allocate(usz size, MemoryTag tag) @wasm @export("allocate")
+fn void*! allocate(usz size, MemoryTag tag)
 {
     if (size == 0 || size == usz.max || size > MAX_SINGLE_ALLOCATION_SIZE)
     {
         return null;
     }
 
-    if (memory_state == null)
-    {
-        return allocator::heap().acquire(size, AllocInitType.ZERO)!;
-    }
-
-    void* ptr = memory_state.tagged_memory[tag].allocator.acquire(size, AllocInitType.ZERO)!;
+    void* ptr = get_allocator(tag).acquire(size, AllocInitType.ZERO)!;
 
     memory_state.total_size += size;
     memory_state.total_allocations++;
@@ -143,15 +133,10 @@ fn void*! allocate(usz size, MemoryTag tag) @wasm @export("allocate")
     return ptr;
 }
 
-fn void*! resize(usz size, void* ptr, MemoryTag tag) @wasm @export("resize")
+fn void*! resize(usz size, void* ptr, MemoryTag tag)
 {
-    if (memory_state == null)
-    {
-        return allocator::heap().resize(ptr, size)!;
-    }
-
     usz old_size = allocations.get((long) ptr)!;
-    void* new_ptr = memory_state.tagged_memory[tag].allocator.resize(ptr, size)!;
+    void* new_ptr = get_allocator(tag).resize(ptr, size)!;
 
     usz size_diff = size - old_size;
     memory_state.total_size += size_diff;
@@ -163,7 +148,7 @@ fn void*! resize(usz size, void* ptr, MemoryTag tag) @wasm @export("resize")
     return new_ptr;
 }
 
-fn void! free(void* ptr, usz size, MemoryTag tag) @wasm @export("free")
+fn void! free(void* ptr, usz size, MemoryTag tag)
 {
     if (ptr == null)
     {
@@ -175,11 +160,6 @@ fn void! free(void* ptr, usz size, MemoryTag tag) @wasm @export("free")
         return;
     }
 
-    if (memory_state == null)
-    {
-        return allocator::heap().release(ptr, false);
-    }
-
     if (!allocations.has_key((long) ptr))
     {
         return;
@@ -187,12 +167,27 @@ fn void! free(void* ptr, usz size, MemoryTag tag) @wasm @export("free")
 
     allocations.remove((long) ptr);
 
-    memory_state.tagged_memory[tag].allocator.release(ptr, false);
+    get_allocator(tag).release(ptr, false);
 
     memory_state.total_size -= size;
     memory_state.total_allocations--;
     memory_state.tagged_memory[tag].total_size -= size;
     memory_state.tagged_memory[tag].num_allocations--;
+}
+
+fn Allocator get_allocator(MemoryTag tag)
+{
+    if (memory_state.tagged_memory[tag].allocator)
+    {
+        return memory_state.tagged_memory[tag].allocator;
+    }
+
+    if (default_allocator)
+    {
+        return default_allocator;
+    }
+
+    return allocator::heap();
 }
 
 macro kallocate($Type, tag)
@@ -203,12 +198,7 @@ macro kallocate($Type, tag)
 // We need this to allocate slices
 macro kallocate_many($Type, count, tag)
 {
-    if (memory_state == null)
-    {
-        return allocator::new_array(allocator::heap(), $Type, count);
-    }
-
-    $Type[] slice = allocator::new_array(memory_state.tagged_memory[tag].allocator, $Type, count);
+    $Type[] slice = allocator::new_array(get_allocator(tag), $Type, count);
     usz size = count * $Type.sizeof;
 
     memory_state.total_size += size;
@@ -235,11 +225,6 @@ macro Allocator kallocator() => &kenzine_allocator;
 
 fn void! log_memory_report()
 {
-    if (memory_state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     DString report = dstring::temp_new();
     usz size = memory_state.total_size;
 

@@ -23,24 +23,15 @@ struct ResourceParams
     String base_asset_path;
 }
 
-def CoreSystem = kenzine::core::System(<ResourceState, ResourceParams>);
-struct ResourceSystem(CoreSystem)
+struct ResourceSystem(kenzine::core::System(<ResourceParams>))
 {
-    ResourceState* state;
+    bool dummy;
 }
 
-ResourceState* resource_state = null;
+ResourceState resource_state;
 
-fn void! ResourceSystem.initialize(ResourceSystem* self, ResourceState* state, ResourceParams* params) @dynamic
+fn void! ResourceSystem.initialize(ResourceSystem* self, ResourceParams* params) @dynamic
 {
-    resource_state = state;
-
-    self.state = state;
-    if (self.state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     if (params == null)
     {
         return SystemError.PARAMS_IS_NULL?;
@@ -51,19 +42,15 @@ fn void! ResourceSystem.initialize(ResourceSystem* self, ResourceState* state, R
         return ResourceSystemError.BASE_ASSET_PATH_EMPTY?;
     }
 
-    //cache::initialize();
-
-    self.state.config = *params;
-    self.state.resource_loaders.new_init(params.max_loaders, memory::kallocator());
+    resource_state.config = *params;
+    resource_state.resource_loaders.new_init(params.max_loaders, memory::kallocator());
 
     self.register_default_loaders()!;
 }
 
 fn void! ResourceSystem.shutdown(ResourceSystem* self) @dynamic
 {
-    self.state.resource_loaders.free();
-
-    //cache::shutdown();
+    resource_state.resource_loaders.free();
 }
 
 fn void! ResourceSystem.register_default_loaders(ResourceSystem* self)
@@ -74,11 +61,6 @@ fn void! ResourceSystem.register_default_loaders(ResourceSystem* self)
 
 fn void! ResourceSystem.register_loader(ResourceSystem* self, ResourceLoader loader)
 {
-    if (self.state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     if (loader.type == ResourceType.UNKNOWN)
     {
         return ResourceSystemError.RESOURCE_LOADER_INVALID_TYPE?;
@@ -89,21 +71,16 @@ fn void! ResourceSystem.register_loader(ResourceSystem* self, ResourceLoader loa
         return ResourceSystemError.RESOURCE_LOADER_ALREADY_REGISTERED?;
     }
 
-    if (self.state.resource_loaders.len() >= self.state.config.max_loaders)
+    if (resource_state.resource_loaders.len() >= resource_state.config.max_loaders)
     {
         return ResourceSystemError.RESOURCE_LOADERS_LIMIT_REACHED?;
     }
 
-    self.state.resource_loaders.push(loader);
+    resource_state.resource_loaders.push(loader);
 }
 
 fn void! load(ResourceType type, String name, Resource* out_resource)
 {
-    if (resource_state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     if (type == ResourceType.UNKNOWN)
     {
         return ResourceSystemError.RESOURCE_LOADER_INVALID_TYPE?;
@@ -130,11 +107,6 @@ fn void! ResourceSystem.load(ResourceSystem* self, ResourceType type, String nam
 
 fn void! load_custom(String custom_type, String name, Resource* out_resource)
 {
-    if (resource_state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     if (custom_type.len == 0)
     {
         return ResourceSystemError.RESOURCE_LOADER_INVALID_TYPE?;
@@ -156,11 +128,6 @@ fn void! ResourceSystem.load_custom(ResourceSystem* self, String custom_type, St
 
 fn void! unload(Resource* resource)
 {
-    if (resource_state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     ResourceLoader* loader = get_loader(resource.type, resource.metadata.custom_type)!;
     if (loader == null)
     {
@@ -177,11 +144,6 @@ fn void! ResourceSystem.unload(ResourceSystem* self, Resource* resource)
 
 fn ResourceLoader*! get_loader(ResourceType type, String custom_type)
 {
-    if (resource_state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     for (usz i = 0; i < resource_state.resource_loaders.len(); i++)
     {
         if (resource_state.resource_loaders[i].type != type)
@@ -205,10 +167,5 @@ fn ResourceLoader*! get_loader(ResourceType type, String custom_type)
 
 fn String! get_base_asset_path()
 {
-    if (resource_state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     return resource_state.config.base_asset_path;
 }

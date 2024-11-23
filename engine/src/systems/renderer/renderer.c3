@@ -67,7 +67,6 @@ struct FragmentShaderParams
 struct RendererParams
 {
     SupportedBackend backend_type;
-    RendererBackend backend;
 
     Color clear_color;
     ZString device_label;
@@ -80,50 +79,55 @@ struct RenderPacket
     double delta_time;
 }
 
-def CoreSystem = kenzine::core::System(<RendererState, RendererParams>);
-struct RendererSystem(CoreSystem)
+struct RendererSystem(kenzine::core::System(<RendererParams>))
 {
-    RendererState* state;
+    bool dummy;
 }
 
-RendererState* renderer_state = null;
+RendererState renderer_state;
 
-fn void! RendererSystem.initialize(RendererSystem* self, RendererState* state, RendererParams* params) @dynamic
+// TODO: see if there is a better way to do this
+WebGPUBackend webGPU_backend;
+JSBackend js_backend;
+
+fn void! RendererSystem.initialize(RendererSystem* self, RendererParams* params) @dynamic
 {
-    self.state = state;
-    self.state.backend_type = params.backend_type;
-    renderer_state = self.state;
-
-    if (self.state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     if (params == null)
     {
         return SystemError.PARAMS_IS_NULL?;
     }
+    
+    renderer_state.backend_type = params.backend_type;
 
-    self.state.backend = params.backend;
-    self.state.backend.initialize(params)!;
+    switch (params.backend_type)
+    {
+        case SupportedBackend.WEBGPU:
+            renderer_state.backend = &webGPU_backend;
+            break;
+        case SupportedBackend.JS:
+            renderer_state.backend = &js_backend;
+            break;
+    }
+
+    renderer_state.backend.initialize(params)!;
 }
 
 fn void! RendererSystem.draw(RendererSystem* self, RenderPacket* packet) @dynamic
 {
-    self.state.backend.begin_frame(packet.delta_time)!;
+    renderer_state.backend.begin_frame(packet.delta_time)!;
 
-    self.state.backend.begin_renderpass(RenderPassType.WORLD)!;
+    renderer_state.backend.begin_renderpass(RenderPassType.WORLD)!;
 
-    self.state.backend.draw_frame(packet.delta_time)!;
+    renderer_state.backend.draw_frame(packet.delta_time)!;
 
-    self.state.backend.end_renderpass(RenderPassType.WORLD)!;
+    renderer_state.backend.end_renderpass(RenderPassType.WORLD)!;
 
-    self.state.backend.end_frame(packet.delta_time)!;
+    renderer_state.backend.end_frame(packet.delta_time)!;
 }
 
 fn void! RendererSystem.shutdown(RendererSystem* self) @dynamic
 {
-    self.state.backend.shutdown()!;
+    renderer_state.backend.shutdown()!;
 }
 
 fn usz RendererSystem.get_state_size(RendererSystem* self) @dynamic

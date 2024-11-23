@@ -2,7 +2,6 @@ module kenzine::faults;
 
 fault SystemError
 {
-    STATE_IS_NULL,
     PARAMS_IS_NULL,
 }
 
@@ -16,4 +15,7 @@ fault ResourceSystemError
     RESOURCE_LOADER_USE_LOAD_CUSTOM_INSTEAD,
     LOAD_FAILED,
     RESOURCE_TYPE_MISMATCH,
+    RESOURCE_INVALID_TYPE,
+    RESOURCE_NOT_FOUND_OR_INVALID,
+    RESOURCE_CACHE_FULL,
 }

@@ -27,24 +27,15 @@ struct LogParams
     String log_file;
 }
 
-def CoreSystem = kenzine::core::System(<LogState, LogParams>);
-struct LogSystem(CoreSystem)
+struct LogSystem(kenzine::core::System(<LogParams>))
 {
-    LogState* state;
+    bool dummy;
 }
 
-LogState* log_state = null;
+LogState log_state;
 
-fn void! LogSystem.initialize(LogSystem* self, LogState* state, LogParams* params) @dynamic
+fn void! LogSystem.initialize(LogSystem* self, LogParams* params) @dynamic
 {
-    self.state = state;
-    log_state = self.state;
-
-    if (self.state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
     if (params == null)
     {
         return SystemError.PARAMS_IS_NULL?;
@@ -61,7 +52,7 @@ $else
     }
 
     log_path = log_path.new_append(params.log_file)!;
-    self.state.file = io::file::open(log_path.path_string, "a")!;
+    log_state.file = io::file::open(log_path.path_string, "a")!;
 $endif
 }
 
@@ -70,8 +61,8 @@ fn void! LogSystem.shutdown(LogSystem* self) @dynamic
 $if($feature(PLATFORM_WEB)):
 
 $else
-    self.state.file.flush()!;
-    self.state.file.close()!;
+    log_state.file.flush()!;
+    log_state.file.close()!;
 $endif
 }
 
@@ -100,7 +91,7 @@ fn void! log(LogLevel level, String format, args...)
         io::printn(message);
 
 $if(!$feature(PLATFORM_WEB)):
-        if (log_state != null && log_state.file.file != null)
+        if (log_state.file.file != null)
         {
             log_state.file.write(message)!;
             log_state.file.write("\n")!;

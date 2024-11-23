@@ -21,6 +21,7 @@ fn bool! walk_asset(Path path, bool is_dir, void* data)
     c3_name.append(".c3");
 
     Path dst = dst_path.new_append(c3_name.str_view())!;
+
     io::printfn("Embedding asset: %s in %s", path.path_string, dst.path_string)!;
 
     DString c3_data = dstring::temp_new("module kenzine::assets;\n\n");
@@ -34,12 +35,12 @@ fn bool! walk_asset(Path path, bool is_dir, void* data)
     split = splitter.next()!;
 
     DString escaped_string = dstring::temp_new(split);
-    escaped_string.replace("\\", "\\\\");
+    escaped_string.replace("\\", "_");
 
     c3_data.appendf("fn void embed_asset_%d() @init(1024)\n", asset_index)!;
     c3_data.append("{\n");
-    c3_data.appendf("\tio::printfn(\"Embedding asset: %s\\%s\");\n", "assets", escaped_string.str_view()[1..])!;
-    c3_data.appendf("\tcache::add(\"%s\\%s\", asset_data_%d);\n", "assets", escaped_string.str_view()[1..], asset_index)!;
+
+    c3_data.appendf("\tcache::add(\"%s_%s\", asset_data_%d)!!;\n", "assets", escaped_string.str_view()[1..], asset_index)!;
     c3_data.append("}\n");
 
     File file = io::file::open(dst.path_string, "w")!;

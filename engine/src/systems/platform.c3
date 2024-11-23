@@ -15,6 +15,8 @@ struct PlatformState
     Hwnd h_window @if(env::WIN32);
     Char16* hwnd_class_name @if(env::WIN32);
     Char16* title @if(env::WIN32);
+
+    char dummy;
 }
 
 struct PlatformParams
@@ -26,24 +28,15 @@ struct PlatformParams
     uint y;
 }
 
-def CoreSystem = kenzine::core::System(<PlatformState, PlatformParams>);
-struct PlatformSystem(CoreSystem)
+struct PlatformSystem(kenzine::core::System(<PlatformParams>))
 {
-    PlatformState* state;
+    bool dummy;
 }
 
-PlatformState* platform = null;
+PlatformState platform;
 
-fn void! PlatformSystem.initialize(PlatformSystem* self, PlatformState* state, PlatformParams* params) @dynamic
+fn void! PlatformSystem.initialize(PlatformSystem* self, PlatformParams* params) @dynamic
 {
-    self.state = state;
-    if (self.state == null)
-    {
-        return SystemError.STATE_IS_NULL?;
-    }
-
-    platform = self.state;
-
     if (params == null)
     {
         return SystemError.PARAMS_IS_NULL?;

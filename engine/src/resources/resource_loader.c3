@@ -68,8 +68,13 @@ fn MemoryTag get_memory_tag(ResourceType type)
 
 fn char[]! get_resource_file_contents(String path, ResourceType type)
 {
+    DString cache_key = dstring::temp_new(path);
+    cache_key.replace("\\", "_");
+    cache_key.replace("/", "_");
+
 $if(!$feature(PLATFORM_WEB)):
-    char[]! cached = cache::get(path);
+    char[]! cached = cache::get(cache_key.str_view());
+    
     if (try cached)
     {
         log::log(LogLevel.INFO, "Loading resource %s from cache", path)!;
@@ -81,7 +86,9 @@ $if(!$feature(PLATFORM_WEB)):
 
     usz size = io::file::get_size(path)!;
     char[] buffer = memory::kallocate_many(char, size + 1, get_memory_tag(type));
-    cache::add(path, buffer);
+
+    
+    cache::add(cache_key.str_view(), buffer)!;
 
     io::file::load_buffer(path, buffer)!;
     buffer[size] = 0;
@@ -89,6 +96,6 @@ $if(!$feature(PLATFORM_WEB)):
     log::log(LogLevel.INFO, "Loaded resource %s of size %d", path, size)!;
     return buffer[3..]; // for some reason I have some garbage data at the beginning of the buffer, chop it
 $else
-    return cache::get(path)!;
+    return cache::get(cache_key.str_view())!;
 $endif
 }

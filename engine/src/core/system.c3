@@ -1,8 +1,7 @@
-module kenzine::core(<State, Params>);
+module kenzine::core(<Params>);
 
 interface System
 {
-    fn void! initialize(State* state, Params* params);
+    fn void! initialize(Params* params);
     fn void! shutdown();
-    fn usz get_state_size();
 }

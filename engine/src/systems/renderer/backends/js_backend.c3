@@ -36,7 +36,7 @@ $endif
 
 fn void! JSBackend.draw_frame(JSBackend* self, double delta_time) @dynamic
 {
-$if($feature(PLATFORMWEB)):
+$if($feature(PLATFORM_WEB)):
     wasm::renderer_draw_frame(delta_time);
 $endif
 }

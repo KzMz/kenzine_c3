@@ -32,12 +32,6 @@ fn void! TextResourceLoaderFunctions.load(TextResourceLoaderFunctions* self, Res
     out_resource.size = out_resource.data.len;
 }
 
-// TODO: move it somewhere else and see if this is needed at all
-fn void! on_resource_loaded(char* buffer, usz buffer_len) @wasm @export("on_resource_loaded") @if($feature(PLATFORM_WEB))
-{
-    log::log(LogLevel.INFO, "Resource loaded of size %d - contents: \n%s", buffer_len, (String) buffer[3..buffer_len-1])!;
-}
-
 fn void! TextResourceLoaderFunctions.unload(TextResourceLoaderFunctions* self, ResourceLoader* loader, Resource* resource) @dynamic
 {
     unload_resource(resource, resources::get_memory_tag(loader.type))!;

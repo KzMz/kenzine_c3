@@ -72,9 +72,7 @@ $endif
 
     MemoryParams memory_params;
     memory_params.default_allocator = allocator::heap();
-
-    MemoryState memory_state;
-    app.memory_system.initialize(&memory_state, &memory_params)!;
+    app.memory_system.initialize(&memory_params)!;
 
     game.state = memory::allocate(game.state_size, MemoryTag.GAME)!;
 
@@ -83,33 +81,17 @@ $endif
     app.running = true;
     app.suspended = false;
 
-    LogState* log_state = memory::kallocate(LogState, MemoryTag.APP)!;
-    app.log_system.initialize(log_state, &game.config.log_params)!;
+    app.log_system.initialize(&game.config.log_params)!;
 
     EventParams params;
-    EventState* event_state = memory::kallocate(EventState, MemoryTag.APP)!;
-    app.event_system.initialize(event_state, &params)!;
+    app.event_system.initialize(&params)!;
 
     subscribe_default_events()!;
 
-    PlatformState* platform_state = memory::kallocate(PlatformState, MemoryTag.APP)!;
-    app.platform_system.initialize(platform_state, &game.config.platform_params)!;
+    app.platform_system.initialize(&game.config.platform_params)!;
 
-    ResourceState* resource_state = memory::kallocate(ResourceState, MemoryTag.APP)!;
-    app.resource_system.initialize(resource_state, &game.config.resource_params)!;
+    app.resource_system.initialize(&game.config.resource_params)!;
 
-    RendererBackend renderer_backend;
-    switch (game.config.renderer_params.backend_type)
-    {
-        case SupportedBackend.WEBGPU:
-            renderer_backend = memory::kallocate(WebGPUBackend, MemoryTag.RENDERER)!;
-            break;
-        case SupportedBackend.JS:
-            renderer_backend = memory::kallocate(JSBackend, MemoryTag.RENDERER)!;
-            break;
-    }
-
-    game.config.renderer_params.backend = renderer_backend;
     if (game.config.renderer_params.swapchain_width == 0)
     {
         game.config.renderer_params.swapchain_width = game.config.platform_params.width;
@@ -119,8 +101,7 @@ $endif
         game.config.renderer_params.swapchain_height = game.config.platform_params.height;
     }
 
-    RendererState* renderer_state = memory::kallocate(RendererState, MemoryTag.RENDERER)!;
-    app.renderer_system.initialize(renderer_state, &game.config.renderer_params)!;
+    app.renderer_system.initialize(&game.config.renderer_params)!;
 
     app.log_system.log(LogLevel.INFO, "Systems initialized")!;
 
@@ -201,30 +182,13 @@ fn void! Application.shutdown(Application* self)
 
     app.renderer_system.shutdown()!;
 
-    switch (app.renderer_system.state.backend_type)
-    {
-        case SupportedBackend.WEBGPU:
-            memory::kfree(app.renderer_system.state.backend, WebGPUBackend, MemoryTag.RENDERER)!;
-            break;
-        case SupportedBackend.JS:
-            memory::kfree(app.renderer_system.state.backend, JSBackend, MemoryTag.RENDERER)!;
-            break;
-    }
-
-    memory::kfree(app.renderer_system.state, RendererState, MemoryTag.RENDERER)!;
-
     app.resource_system.shutdown()!;
-    memory::kfree(app.resource_system.state, ResourceState, MemoryTag.APP)!;
-
     app.platform_system.shutdown()!;
-    memory::kfree(app.platform_system.state, PlatformState, MemoryTag.APP)!;
 
     app.event_system.shutdown()!;
-    memory::kfree(app.event_system.state, EventState, MemoryTag.APP)!;
 
     app.log_system.log(LogLevel.INFO, "Application shutting down")!;
     app.log_system.shutdown()!;
-    memory::kfree(app.log_system.state, LogState, MemoryTag.APP)!;
 
     app.memory_system.shutdown()!;
 }
