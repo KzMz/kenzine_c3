@@ -7,12 +7,26 @@ import kenzine::common;
 import kenzine::log;
 import kenzine::platform;
 import kenzine::memory;
+import kenzine::math;
 
 // TEMP
 import kenzine::resource;
 import kenzine::resources;
 import std::io;
 // TEMP end
+
+const usz VERTEX_BUFFER_VERTEX_COUNT = 1024 * 1024;
+const usz INDEX_BUFFER_INDEX_COUNT = 1024 * 1024;
+
+macro usz vertex_buffer_size($Type)
+{
+    return $Type.sizeof * VERTEX_BUFFER_VERTEX_COUNT;
+}
+
+macro usz index_buffer_size($Type)
+{
+    return $Type.sizeof * INDEX_BUFFER_INDEX_COUNT;
+}
 
 fault WebGPUError
 {
@@ -29,6 +43,18 @@ struct FrameState
     webgpu::RenderPassEncoder renderpass;
 }
 
+struct MappedBuffer
+{
+    webgpu::Buffer buffer;
+    bool ready;
+}
+
+struct VertexBuffer
+{
+    webgpu::Buffer buffer;
+    usz vertex_count;
+}
+
 struct WebGPUBackend(RendererBackend)
 {
     webgpu::Instance instance;
@@ -37,6 +63,8 @@ struct WebGPUBackend(RendererBackend)
     webgpu::Device device;
     webgpu::Queue queue;
     webgpu::Surface surface;
+
+    VertexBuffer vertex_buffer;
 
     webgpu::RenderPipeline world_pipeline;
 
@@ -93,6 +121,9 @@ fn void! WebGPUBackend.initialize(WebGPUBackend* self, RendererParams* params) @
     deviceDescriptor.deviceLostCallback = &on_device_lost;
     deviceDescriptor.uncapturedErrorCallbackInfo.next = null;
     deviceDescriptor.uncapturedErrorCallbackInfo.callback = &on_device_error;
+
+    webgpu::RequiredLimits required_limits = self.get_requirements(&params.requirements)!;
+    deviceDescriptor.requiredLimits = &required_limits;
 
     webgpu::Device! device = self.adapter.requestDevice(&deviceDescriptor);
     if (catch err = device)
@@ -153,9 +184,29 @@ $endif
     pipelineDescriptor.next = null;
 
     // Vertex stage
-    // TODO: make this configurable
-    pipelineDescriptor.vertex.bufferCount = 0; // number of attribute buffers
-    pipelineDescriptor.vertex.buffers = null; // attribute buffers
+    VertexBufferLayout vertexBufferLayout;
+    VertexAttribute positionAttr;
+    positionAttr.shaderLocation = 0;
+    positionAttr.offset = 0;
+    positionAttr.format = webgpu::VertexFormat.FLOAT_32X2;
+
+    VertexAttribute[] attributes =
+    {
+        positionAttr,
+    };
+
+    vertexBufferLayout.attributeCount = 1;
+    vertexBufferLayout.attributes = attributes.ptr;
+    vertexBufferLayout.arrayStride = Vertex2d.sizeof;
+    vertexBufferLayout.stepMode = VertexStepMode.VERTEX;
+
+    VertexBufferLayout[] vertexBufferLayouts = 
+    {
+        vertexBufferLayout,
+    };
+
+    pipelineDescriptor.vertex.bufferCount = 1; 
+    pipelineDescriptor.vertex.buffers = vertexBufferLayouts.ptr; // attribute buffers
 
     ShaderModuleDescriptor shaderModuleDescriptor;
     shaderModuleDescriptor.hintCount = 0;
@@ -237,10 +288,11 @@ $endif
 
     shaderModule.release();
 
-    memory::kfree_many(code.ptr - 3, char, (code.len + 3), MemoryTag.SHADER)!;
-
     // TEMP
+    memory::kfree_many(code.ptr - 3, char, (code.len + 3), MemoryTag.SHADER)!;
     resource::unload(&shader)!;
+
+    self.create_buffers()!;
 }
 
 fn TextureView WebGPUBackend.get_next_surface_texture_view(WebGPUBackend* self)
@@ -266,6 +318,105 @@ fn TextureView WebGPUBackend.get_next_surface_texture_view(WebGPUBackend* self)
 
     TextureView view = texture.texture.createView(&viewDescriptor);
     return view;
+}
+
+fn void! WebGPUBackend.create_buffers(WebGPUBackend* self)
+{
+    /*BufferUsage usage;
+    usage.copySource = true;
+    usage.copyDestination = true;
+    BufferDescriptor bufferDescriptor;
+    bufferDescriptor.next = null;
+    bufferDescriptor.label = "Kenzine Buffer 1";
+    bufferDescriptor.usage = usage;
+    bufferDescriptor.size = 16;
+    self.buffer1 = self.device.createBuffer(&bufferDescriptor);
+
+    char[] data = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+    self.queue.writeBuffer(self.buffer1, 0, data.ptr, data.len);
+
+    bufferDescriptor.label = "Kenzine Buffer 2";
+    bufferDescriptor.usage.copySource = false;
+    bufferDescriptor.usage.mapRead = true;
+    self.buffer2.buffer = self.device.createBuffer(&bufferDescriptor);
+
+    CommandEncoder command_encoder = self.device.createCommandEncoder(null);
+    command_encoder.copyBufferToBuffer(self.buffer1, 0, self.buffer2.buffer, 0, 16);
+
+    CommandBuffer command = command_encoder.finish(null);
+    command_encoder.release();
+    self.queue.submit(1, &command);
+    command.release();
+
+    self.buffer2.ready = false;
+    self.buffer2.buffer.mapAsync(MapMode.READ, 0, 16, &on_buffer2_mapped, &self.buffer2);*/
+
+    Vertex2d[] vertices = 
+    {
+        { 
+            .position = { -0.5, -0.5 },
+        },
+        { 
+            .position = { 0.5, -0.5 },
+        },
+        { 
+            .position = { 0.0, 0.5 },
+        },
+
+        {
+            .position = { -0.55, -0.5 },
+        },
+        {
+            .position = { -0.05, 0.5 },
+        },
+        {
+            .position = { -0.55, 0.5 },
+        },
+    };
+
+    self.vertex_buffer.vertex_count = vertices.len;
+
+    BufferUsage usage;
+    usage.copyDestination = true;
+    usage.vertex = true;
+    BufferDescriptor bufferDescriptor;
+    bufferDescriptor.next = null;
+    bufferDescriptor.label = "Kenzine Vertex Buffer";
+    bufferDescriptor.usage = usage;
+    bufferDescriptor.size = (CULongLong) (vertices.len * Vertex2d.sizeof); //vertex_buffer_size(Vertex2d);
+    bufferDescriptor.mappedAtCreation = CBool.FALSE;
+    self.vertex_buffer.buffer = self.device.createBuffer(&bufferDescriptor);
+
+    self.queue.writeBuffer(self.vertex_buffer.buffer, 0, vertices.ptr, vertices.len * Vertex2d.sizeof);
+}
+
+fn void on_buffer2_mapped(BufferMapAsyncStatus status, void* buffer)
+{
+    MappedBuffer* buffer2 = (MappedBuffer*) buffer;
+
+    buffer2.ready = true;
+    log::log(LogLevel.INFO, "mapped with status %s", status)!!;
+
+    if (status != BufferMapAsyncStatus.SUCCESS)
+    {
+        return;
+    }
+
+    char[] data = ((char*) buffer2.buffer.getMappedRange(0, 16))[0..16];
+    for (int i = 0; i < 16; i++)
+    {
+        log::log(LogLevel.INFO, "buffer2[%d] = %d", i, data[i])!!;
+    }
+
+    buffer2.buffer.unmap();
+}
+
+fn void! WebGPUBackend.destroy_buffers(WebGPUBackend* self)
+{
+    //self.buffer1.release();
+    //self.buffer2.buffer.release();
+
+    self.vertex_buffer.buffer.release();
 }
 
 fn void! WebGPUBackend.begin_renderpass(WebGPUBackend* self, RenderPassType type) @dynamic
@@ -317,7 +468,10 @@ fn void! WebGPUBackend.begin_frame(WebGPUBackend* self, double delta_time) @dyna
 fn void! WebGPUBackend.draw_frame(WebGPUBackend* self, double delta_time) @dynamic
 {
     self.frame_state.renderpass.setPipeline(self.world_pipeline);
-    self.frame_state.renderpass.draw(3, 1, 0, 0);
+
+    self.frame_state.renderpass.setVertexBuffer(0, self.vertex_buffer.buffer, 0, self.vertex_buffer.buffer.getSize());
+
+    self.frame_state.renderpass.draw((CUInt) self.vertex_buffer.vertex_count, 1, 0, 0);
 }
 
 fn void! WebGPUBackend.end_frame(WebGPUBackend* self, double delta_time) @dynamic
@@ -390,6 +544,7 @@ fn void! WebGPUBackend.print_adapter_info(WebGPUBackend* self)
     report.appendf("- maxTextureDimension2D: %d\n", limits.limits.maxTextureDimension2D);
     report.appendf("- maxTextureDimension3D: %d\n", limits.limits.maxTextureDimension3D);
     report.appendf("- maxTextureArrayLayers: %d\n", limits.limits.maxTextureArrayLayers);
+    report.appendf("- maxVertexAttributes: %d\n", limits.limits.maxVertexAttributes);
 
     usz featureCount = self.adapter.enumerateFeatures(null);
     report.append("Features:\n");
@@ -454,6 +609,7 @@ fn void! WebGPUBackend.print_device_info(WebGPUBackend* self)
     report.appendf("- maxTextureDimension2D: %d\n", limits.limits.maxTextureDimension2D);
     report.appendf("- maxTextureDimension3D: %d\n", limits.limits.maxTextureDimension3D);
     report.appendf("- maxTextureArrayLayers: %d\n", limits.limits.maxTextureArrayLayers);
+    report.appendf("- maxVertexAttributes: %d\n", limits.limits.maxVertexAttributes);
 
     usz featureCount = self.device.enumerateFeatures(null);
     report.append("Features:\n");
@@ -490,6 +646,63 @@ fn void! WebGPUBackend.print_device_info(WebGPUBackend* self)
     }
 
     log::log(LogLevel.INFO, report.str_view())!;
+}
+
+fn void! WebGPUBackend.check_requirements(WebGPUBackend* self, RendererRequirements* requirements) @dynamic
+{
+
+}
+
+fn webgpu::RequiredLimits! WebGPUBackend.get_requirements(WebGPUBackend* self, RendererRequirements* requirements) @dynamic
+{
+    webgpu::SupportedLimits supported_limits;
+    supported_limits.next = null;
+    if (self.adapter.getLimits(&supported_limits) != CBool.TRUE)
+    {
+        return WebGPUError.COULD_NOT_GET_LIMITS?;
+    }
+
+    webgpu::RequiredLimits limits;
+    limits.limits.maxTextureDimension1D = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxTextureDimension2D = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxTextureDimension3D = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxTextureArrayLayers = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxBindGroups = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxBindGroupsPlusVertexBuffers = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxBindingsPerBindGroup = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxDynamicUniformBuffersPerPipelineLayout = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxDynamicStorageBuffersPerPipelineLayout = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxSampledTexturesPerShaderStage = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxSamplersPerShaderStage = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxStorageBuffersPerShaderStage = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxStorageTexturesPerShaderStage = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxUniformBuffersPerShaderStage = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxUniformBufferBindingSize = webgpu::LIMIT_U64_UNDEFINED;
+    limits.limits.maxStorageBufferBindingSize = webgpu::LIMIT_U64_UNDEFINED;
+    limits.limits.maxVertexBuffers = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxBufferSize = webgpu::LIMIT_U64_UNDEFINED;
+    limits.limits.maxVertexAttributes = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxVertexBufferArrayStride = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxInterStageShaderComponents = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxInterStageShaderVariables = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxColorAttachments = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxColorAttachmentBytesPerSample = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxComputeWorkgroupStorageSize = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxComputeInvocationsPerWorkgroup = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxComputeWorkgroupSizeX = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxComputeWorkgroupSizeY = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxComputeWorkgroupSizeZ = webgpu::LIMIT_U32_UNDEFINED;
+    limits.limits.maxComputeWorkgroupsPerDimension = webgpu::LIMIT_U32_UNDEFINED;
+
+    limits.limits.minUniformBufferOffsetAlignment = supported_limits.limits.minUniformBufferOffsetAlignment;
+    limits.limits.minStorageBufferOffsetAlignment = supported_limits.limits.minStorageBufferOffsetAlignment;
+
+    limits.limits.maxVertexAttributes = requirements.max_vertex_attributes;
+    limits.limits.maxVertexBuffers = requirements.max_vertex_buffers;
+    limits.limits.maxBufferSize = requirements.max_buffer_size;
+    limits.limits.maxVertexBufferArrayStride = requirements.max_vertex_buffer_stride;
+
+    return limits;
 }
 
 fn void on_device_lost(DeviceLostReason reason, ZString message, UserData data)

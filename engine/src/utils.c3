@@ -39,3 +39,34 @@ macro slice_to_ptr($PtrType, slice)
 {
     return ($PtrType*) slice.ptr;
 }
+
+// TODO: find if there is a better way to do this
+macro offset_of_index($Type, index)
+{
+    $switch ($Type.membersof.len)
+        $case 1: 
+            return offset_of_index_($Type, 0);
+        
+        $case 2: 
+            switch (index)
+            {
+                case 0: return offset_of_index_($Type, 0);
+                case 1: return offset_of_index_($Type, 1);
+            }
+
+        $case 3: 
+            switch (index)
+            {
+                case 0: return offset_of_index_($Type, 0);
+                case 1: return offset_of_index_($Type, 1);
+                case 2: return offset_of_index_($Type, 2);
+            }
+    $endswitch;
+
+    return 0;
+}
+
+macro offset_of_index_($Type, $index) @private
+{
+    return $Type.membersof[$index].offsetof;
+}

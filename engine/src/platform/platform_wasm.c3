@@ -8,6 +8,7 @@ import kenzine::renderer;
 import kenzine::resources;
 import kenzine::resource;
 import kenzine::utils;
+import kenzine::math;
 import std::io::os;
 
 // Thanks to rexim https://github.com/c3lang/c3c/pull/1440
@@ -69,6 +70,8 @@ fn void! web_loop() @export("app_loop") @wasm @if($feature(PLATFORM_WEB))
     allocator::temp().reset(app::app.temp_mark);
 }
 
+// Resources
+
 fn Resource* load_resource(ResourceType type, void* name, usz name_len) @export("load_resource") @wasm @if($feature(PLATFORM_WEB))
 {
     char[] resource_name = utils::ptr_to_slice_string(name, name_len);
@@ -88,6 +91,8 @@ fn void unload_resource(Resource* resource) @export("unload_resource") @wasm @if
 
     memory::kfree(resource, Resource, resources::get_memory_tag(resource.type))!!;
 }
+
+// Shader Resources
 
 fn char* shader_get_code(Resource* resource) @export("shader_get_code") @wasm @if($feature(PLATFORM_WEB))
 {
@@ -131,7 +136,51 @@ fn usz shader_get_entry_size(Resource* resource, SupportedShaderStage stage) @ex
     return entry.len;
 }
 
+// Memory
+
 fn void* wasm_allocate(usz size) @wasm @export("allocate") @if($feature(PLATFORM_WEB))
 {
     return allocator::temp().acquire(size, AllocInitType.ZERO, 0)!!;
+}
+
+// Vertex Layout
+
+fn usz vertex2d_get_size() @wasm @export("vertex2d_get_size") @if($feature(PLATFORM_WEB))
+{
+    return Vertex2d.sizeof;
+}
+
+fn usz vertex3d_get_size() @wasm @export("vertex3d_get_size") @if($feature(PLATFORM_WEB))
+{
+    return Vertex3d.sizeof;
+}
+
+fn usz vertex2d_get_attribute_count() @wasm @export("vertex2d_get_attribute_count") @if($feature(PLATFORM_WEB))
+{
+    return Vertex2d.membersof.len;
+}
+
+fn usz vertex3d_get_attribute_count() @wasm @export("vertex3d_get_attribute_count") @if($feature(PLATFORM_WEB))
+{
+    return Vertex3d.membersof.len;
+}
+
+fn usz vertex2d_get_attribute_offset(usz index) @wasm @export("vertex2d_get_attribute_offset") @if($feature(PLATFORM_WEB))
+{
+    return utils::offset_of_index(Vertex2d, index);
+}
+
+fn usz vertex3d_get_attribute_offset(usz index) @wasm @export("vertex3d_get_attribute_offset") @if($feature(PLATFORM_WEB))
+{
+    return utils::offset_of_index(Vertex3d, index);
+}
+
+fn usz vertex2d_get_attribute_format(usz index) @wasm @export("vertex2d_get_attribute_format") @if($feature(PLATFORM_WEB))
+{
+    return (usz) math::vertex2d_formats()[index];
+}
+
+fn usz vertex3d_get_attribute_format(usz index) @wasm @export("vertex3d_get_attribute_format") @if($feature(PLATFORM_WEB))
+{
+    return (usz) math::vertex3d_formats()[index];
 }

@@ -37,7 +37,7 @@ struct VertexState {
 }
 
 struct VertexBufferLayout {
-    CULong arrayStride;
+    CULongLong arrayStride;
     VertexStepMode stepMode;
     usz attributeCount;
     VertexAttribute* attributes;
@@ -45,8 +45,8 @@ struct VertexBufferLayout {
 
 struct VertexAttribute {
     VertexFormat format;
-    CULong offset;
-    CUInt shaderLocation;
+    CULongLong offset;
+    CULong shaderLocation;
 }
 
 struct FragmentState {

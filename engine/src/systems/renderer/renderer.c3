@@ -4,12 +4,6 @@ import kenzine::core;
 import kenzine::faults;
 import kenzine::common;
 
-struct RendererState
-{
-    SupportedBackend backend_type;
-    RendererBackend backend;
-}
-
 enum SupportedBackend
 {
     WEBGPU,
@@ -54,6 +48,12 @@ fn SupportedShaderStage stage_from_string(String stage)
     return SupportedShaderStage.VERTEX;
 }
 
+struct RendererState
+{
+    SupportedBackend backend_type;
+    RendererBackend backend;
+}
+
 struct VertexShaderParams
 {
     ZString entry_point;
@@ -64,6 +64,14 @@ struct FragmentShaderParams
     ZString entry_point;
 }
 
+struct RendererRequirements
+{
+    uint max_vertex_attributes;
+    uint max_vertex_buffers;
+    uint max_buffer_size;
+    uint max_vertex_buffer_stride;
+}
+
 struct RendererParams
 {
     SupportedBackend backend_type;
@@ -72,6 +80,8 @@ struct RendererParams
     ZString device_label;
     usz swapchain_width;
     usz swapchain_height;
+
+    RendererRequirements requirements;
 }
 
 struct RenderPacket
@@ -130,7 +140,7 @@ fn void! RendererSystem.shutdown(RendererSystem* self) @dynamic
     renderer_state.backend.shutdown()!;
 }
 
-fn usz RendererSystem.get_state_size(RendererSystem* self) @dynamic
+fn void! RendererSystem.check_requirements(RendererSystem* self, RendererRequirements* requirements) @dynamic
 {
-    return RendererState.sizeof;
+    renderer_state.backend.check_requirements(requirements)!;
 }

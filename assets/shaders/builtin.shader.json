@@ -5,17 +5,17 @@
   },
   "renderpass": "world",
   "format": "wgsl",
-  "shader_file": "builtin.wgsl",
+  "shader_file": "builtin.wgsl", 
   "stages": [
     {
       "stage": "vertex",
       "entry": "vertex_main",
-      "source": ""
+      "shader_file": ""
     },
     {
       "stage": "fragment",
       "entry": "fragment_main",
-      "source": ""
+      "shader_file": ""
     }
   ]
 }

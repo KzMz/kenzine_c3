@@ -1,5 +1,8 @@
 module webgpu;
 
+const CULong LIMIT_U32_UNDEFINED = 0xffffffffUL;
+const CULongLong LIMIT_U64_UNDEFINED = 0xffffffffffffffffU;
+
 distinct Device = void*;
 
 fault DeviceError {
@@ -105,38 +108,38 @@ struct SupportedLimits {
 }
 
 struct Limits {
-    CUInt maxTextureDimension1D;
-    CUInt maxTextureDimension2D;
-    CUInt maxTextureDimension3D;
-    CUInt maxTextureArrayLayers;
-    CUInt maxBindGroups;
-    CUInt maxBindGroupsPlusVertexBuffers;
-    CUInt maxBindingsPerBindGroup;
-    CUInt maxDynamicUniformBuffersPerPipelineLayout;
-    CUInt maxDynamicStorageBuffersPerPipelineLayout;
-    CUInt maxSampledTexturesPerShaderStage;
-    CUInt maxSamplersPerShaderStage;
-    CUInt maxStorageBuffersPerShaderStage;
-    CUInt maxStorageTexturesPerShaderStage;
-    CUInt maxUniformBuffersPerShaderStage;
-    CULong maxUniformBufferBindingSize;
-    CULong maxStorageBufferBindingSize;
-    CUInt minUniformBufferOffsetAlignment;
-    CUInt minStorageBufferOffsetAlignment;
-    CUInt maxVertexBuffers;
-    CULong maxBufferSize;
-    CUInt maxVertexAttributes;
-    CUInt maxVertexBufferArrayStride;
-    CUInt maxInterStageShaderComponents;
-    CUInt maxInterStageShaderVariables;
-    CUInt maxColorAttachments;
-    CUInt maxColorAttachmentBytesPerSample;
-    CUInt maxComputeWorkgroupStorageSize;
-    CUInt maxComputeInvocationsPerWorkgroup;
-    CUInt maxComputeWorkgroupSizeX;
-    CUInt maxComputeWorkgroupSizeY;
-    CUInt maxComputeWorkgroupSizeZ;
-    CUInt maxComputeWorkgroupsPerDimension;
+    CULong maxTextureDimension1D;
+    CULong maxTextureDimension2D;
+    CULong maxTextureDimension3D;
+    CULong maxTextureArrayLayers;
+    CULong maxBindGroups;
+    CULong maxBindGroupsPlusVertexBuffers;
+    CULong maxBindingsPerBindGroup;
+    CULong maxDynamicUniformBuffersPerPipelineLayout;
+    CULong maxDynamicStorageBuffersPerPipelineLayout;
+    CULong maxSampledTexturesPerShaderStage;
+    CULong maxSamplersPerShaderStage;
+    CULong maxStorageBuffersPerShaderStage;
+    CULong maxStorageTexturesPerShaderStage;
+    CULong maxUniformBuffersPerShaderStage;
+    CULongLong maxUniformBufferBindingSize;
+    CULongLong maxStorageBufferBindingSize;
+    CULong minUniformBufferOffsetAlignment;
+    CULong minStorageBufferOffsetAlignment;
+    CULong maxVertexBuffers;
+    CULongLong maxBufferSize;
+    CULong maxVertexAttributes;
+    CULong maxVertexBufferArrayStride;
+    CULong maxInterStageShaderComponents;
+    CULong maxInterStageShaderVariables;
+    CULong maxColorAttachments;
+    CULong maxColorAttachmentBytesPerSample;
+    CULong maxComputeWorkgroupStorageSize;
+    CULong maxComputeInvocationsPerWorkgroup;
+    CULong maxComputeWorkgroupSizeX;
+    CULong maxComputeWorkgroupSizeY;
+    CULong maxComputeWorkgroupSizeZ;
+    CULong maxComputeWorkgroupsPerDimension;
 }
 
 struct UncapturedErrorCallbackInfo {

@@ -68,8 +68,11 @@ fn void! ShaderResourceLoaderFunctions.load(ShaderResourceLoaderFunctions* self,
         stage_data.stage = renderer::stage_from_string(stage.get_string("stage")!);
         stage_data.entry = stage.get_string("entry")!;//.copy(memory::kallocator());
 
-        String source = stage.get_string("source")!;
-        stage_data.source = source;//source.copy(memory::kallocator());
+        String! source = stage.get_string("source");
+        if (try source)
+        {   
+            stage_data.source = source;//source.copy(memory::kallocator());
+        }
 
         data.stages.push(stage_data);
     }

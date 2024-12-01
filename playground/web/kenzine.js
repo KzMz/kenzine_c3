@@ -23,7 +23,7 @@ class Kenzine {
     constructor(canvas_id) {
         this.wasm = undefined;
         this.canvas = undefined;
-        this.previous_timestamp = 0;
+        this.previousTimestamp = 0;
 
         this.adapter = undefined;
         this.context = undefined;
@@ -31,29 +31,43 @@ class Kenzine {
         this.encoder = undefined;
         this.pass = undefined;
         this.pipeline = undefined;
+        this.vertexBuffer = {
+            buffer: undefined,
+            count: 0
+        };
         this.clearColor = { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
 
         this.canvas = document.getElementById(canvas_id);
     }
 
+    get exports() {
+        if (!this.wasm) return undefined;
+        return this.wasm.instance.exports;
+    }
+
+    get memory() {
+        if (!this.wasm) return undefined;
+        return this.wasm.instance.exports.memory;
+    }
+
     async run(wasm_file) {
         this.wasm = await this.getKenzineWasm(wasm_file);
 
-        this.wasm.instance.exports._initialize();
-        this.wasm.instance.exports.main();
+        this.exports._initialize();
+        this.exports.main();
     }
 
     load_resource(type, name)
     {
-        const name_ptr = this.wasm.instance.exports.allocate(name.length);
-        const name_array = new Uint8ClampedArray(this.wasm.instance.exports.memory.buffer, name_ptr, name.length);
+        const name_ptr = this.exports.allocate(name.length);
+        const name_array = new Uint8ClampedArray(this.memory.buffer, name_ptr, name.length);
 
         for (let i = 0; i < name.length; i++) {
             name_array[i] = name.charCodeAt(i);
         }
         name_array[name.length] = 0;
         
-        return this.wasm.instance.exports.load_resource(type, name_ptr, name_array.length - 1);
+        return this.exports.load_resource(type, name_ptr, name_array.length - 1);
     }
     
     getImports() {
@@ -88,6 +102,7 @@ class Kenzine {
             get_absolute_time: () => {
                 return window.performance.now() / 1000.0;
             },
+            // Renderer
             renderer_initialize: async () => {
                 await this.initialize_renderer();
             },
@@ -111,7 +126,7 @@ class Kenzine {
             },
             renderer_set_clear_color: (r, g, b, a) => {
                 this.clearColor = { r, g, b, a };
-            }
+            },
         };
     }
 
@@ -122,8 +137,8 @@ class Kenzine {
     }
 
     frame(timestamp) {
-        this.previous_timestamp = timestamp;
-        this.wasm.instance.exports.app_loop();
+        this.previousTimestamp = timestamp;
+        this.exports.app_loop();
         window.requestAnimationFrame(this.frame.bind(this));
     }
 
@@ -139,6 +154,17 @@ class Kenzine {
     move(x, y) {
         this.canvas.style.left = `${x}px`;
         this.canvas.style.top = `${y}px`;
+    }
+
+    get_attribute_format_string(attribute_index) {
+        const format = this.exports.vertex2d_get_attribute_format(attribute_index);
+        
+        switch (format) {
+            case 20: return "float32x2";
+            case 21: return "float32x3";
+        }
+        
+        return "float32x2";
     }
 
     async initialize_renderer() {
@@ -167,8 +193,8 @@ class Kenzine {
 
         // TEMP
         const resource = this.load_resource(4, "builtin");
-        const code_size = this.wasm.instance.exports.shader_get_code_size(resource);
-        const code_ptr = this.wasm.instance.exports.shader_get_code(resource);
+        const code_size = this.exports.shader_get_code_size(resource);
+        const code_ptr = this.exports.shader_get_code(resource);
         const code = read_string_from_memory(this.wasm, code_ptr, code_size);
         
         const shaderModule = this.device.createShaderModule({
@@ -176,18 +202,33 @@ class Kenzine {
         });
 
         // Vertex
-        let entry_size = this.wasm.instance.exports.shader_get_entry_size(resource, 0);
-        let entry_ptr = this.wasm.instance.exports.shader_get_entry(resource, 0);
+        const vertexBufferLayout = {
+            arrayStride: this.exports.vertex2d_get_size(),
+            attributes: []
+        };
+        const vertexAttributeCount = this.exports.vertex2d_get_attribute_count();
+        for (let i = 0; i < vertexAttributeCount; i++) {
+            const attribute_offset = this.exports.vertex2d_get_attribute_offset(i);
+            const attribute_format = this.get_attribute_format_string(i);
+            vertexBufferLayout.attributes.push({
+                shaderLocation: i,
+                format: attribute_format,
+                offset: attribute_offset
+            });
+        }
+
+        let entry_size = this.exports.shader_get_entry_size(resource, 0);
+        let entry_ptr = this.exports.shader_get_entry(resource, 0);
         let entry = read_string_from_memory(this.wasm, entry_ptr, entry_size);
         const vertex = {
             module: shaderModule,
             entryPoint: entry,
-            buffers: []
+            buffers: [vertexBufferLayout]
         };
 
         // Fragment
-        entry_size = this.wasm.instance.exports.shader_get_entry_size(resource, 1);
-        entry_ptr = this.wasm.instance.exports.shader_get_entry(resource, 1);
+        entry_size = this.exports.shader_get_entry_size(resource, 1);
+        entry_ptr = this.exports.shader_get_entry(resource, 1);
         entry = read_string_from_memory(this.wasm, entry_ptr, entry_size);
         const fragment = {
             module: shaderModule,
@@ -208,10 +249,34 @@ class Kenzine {
             }
         });
 
+        this.create_buffers();
+
         window.requestAnimationFrame((timestamp) => {
-            this.previous_timestamp = timestamp;
+            this.previousTimestamp = timestamp;
             window.requestAnimationFrame(this.frame.bind(this));
         })
+    }
+
+    create_buffers() {
+        // TODO: retrieve from wasm after we have geometry assets
+        const vertices = new Float32Array([
+            -0.5, -0.5,
+             0.5, -0.5,
+             0.0,  0.5,
+
+            -0.55, -0.5,
+            -0.05,  0.5,
+            -0.55,  0.5
+        ]);
+
+        this.vertexBuffer.buffer = this.device.createBuffer({
+            label: "Kenzine Vertex Buffer",
+            size: vertices.byteLength,
+            usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+        });
+        this.vertexBuffer.count = vertices.length / 2;
+
+        this.device.queue.writeBuffer(this.vertexBuffer.buffer, 0, vertices);
     }
 
     async begin_frame(delta_time) {
@@ -220,7 +285,8 @@ class Kenzine {
 
     async draw_frame(delta_time) {
         this.pass.setPipeline(this.pipeline);
-        this.pass.draw(3, 1, 0, 0);
+        this.pass.setVertexBuffer(0, this.vertexBuffer.buffer);
+        this.pass.draw(this.vertexBuffer.count);
     }
 
     async end_frame(delta_time) {

@@ -34,6 +34,12 @@ fn void main() @export("main") @wasm
             .backend_type = SupportedBackend.WEBGPU,
             .device_label = "WebGPU Device",
             .clear_color = common::Color { 0.9, 0.1, 0.2, 1.0 },
+            .requirements = {
+                .max_vertex_attributes = 1,
+                .max_vertex_buffers = 1,
+                .max_buffer_size = 6 * 2 * float.sizeof,
+                .max_vertex_buffer_stride = 2 * float.sizeof,
+            },
         },
     };
 

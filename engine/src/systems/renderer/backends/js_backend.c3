@@ -61,3 +61,8 @@ $if($feature(PLATFORM_WEB)):
     wasm::renderer_end_renderpass((int) type);
 $endif
 }
+
+fn void! JSBackend.check_requirements(JSBackend* self, RendererRequirements* requirements) @dynamic
+{
+    
+}
