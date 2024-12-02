@@ -5,7 +5,7 @@
 Just run "build.bat" for native build and build-web.bat for web build
 
 ## TODO
-- [X] Buffers
+- [x] Add GPU memory stats to memory module
 - [ ] Geometry asset definition and loader
 - [ ] Material asset definition and loader
 - [ ] Test hard-coded 3d rendering
@@ -15,6 +15,5 @@ Just run "build.bat" for native build and build-web.bat for web build
 - [ ] Support shader code directly into builtin.shader.json file
 - [ ] Support different shader files for different stages
 - [ ] Support different shader formats like SPIR-V
-- [ ] Add GPU memory stats to memory module
 - [ ] Check whether a window library like RGFW or GLFW is beneficial to the project
 - [ ] Find a way to handle user-defined vertex and indices

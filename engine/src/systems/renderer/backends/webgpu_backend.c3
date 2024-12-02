@@ -8,6 +8,7 @@ import kenzine::log;
 import kenzine::platform;
 import kenzine::memory;
 import kenzine::math;
+import kenzine::utils;
 
 // TEMP
 import kenzine::resource;
@@ -71,6 +72,19 @@ struct WebGPUBackend(RendererBackend)
     webgpu::Color clear_color;
 
     FrameState frame_state;
+}
+
+fn webgpu::VertexFormat math::VertexFormat.to_webgpu_format(self)
+{
+    switch (self)
+    {
+        case math::VertexFormat.FLOAT32_2:
+            return webgpu::VertexFormat.FLOAT_32X2;
+        case math::VertexFormat.FLOAT32_3:
+            return webgpu::VertexFormat.FLOAT_32X3;
+        case math::VertexFormat.FLOAT32_4:
+            return webgpu::VertexFormat.FLOAT_32X4;
+    }
 }
 
 fn webgpu::InstanceDescriptor create_instance_descriptor()
@@ -183,21 +197,31 @@ $endif
     RenderPipelineDescriptor pipelineDescriptor;
     pipelineDescriptor.next = null;
 
+    // TEMP
+    Resource shader;
+    resource::load(ResourceType.SHADER, "builtin", &shader)!;
+    String code = resources::shader::get_code(&shader)!;
+    String vertex_entry = resources::shader::get_entry(&shader, SupportedShaderStage.VERTEX);
+    String fragment_entry = resources::shader::get_entry(&shader, SupportedShaderStage.FRAGMENT);
+    // TEMP end
+
     // Vertex stage
     VertexBufferLayout vertexBufferLayout;
-    VertexAttribute positionAttr;
-    positionAttr.shaderLocation = 0;
-    positionAttr.offset = 0;
-    positionAttr.format = webgpu::VertexFormat.FLOAT_32X2;
 
-    VertexAttribute[] attributes =
-    {
-        positionAttr,
-    };
-
-    vertexBufferLayout.attributeCount = 1;
+    String vertex_type = resources::shader::get_vertex_type(&shader);
+    VertexAttribute[] attributes = get_vertex_attributes(vertex_type);
+    vertexBufferLayout.attributeCount = attributes.len;
     vertexBufferLayout.attributes = attributes.ptr;
-    vertexBufferLayout.arrayStride = Vertex2d.sizeof;
+
+    if (vertex_type == "vertex2d")
+    {
+        vertexBufferLayout.arrayStride = Vertex2d.sizeof;
+    }
+    else if (vertex_type == "vertex3d")
+    {
+        vertexBufferLayout.arrayStride = Vertex3d.sizeof;
+    }
+
     vertexBufferLayout.stepMode = VertexStepMode.VERTEX;
 
     VertexBufferLayout[] vertexBufferLayouts = 
@@ -211,14 +235,6 @@ $endif
     ShaderModuleDescriptor shaderModuleDescriptor;
     shaderModuleDescriptor.hintCount = 0;
     shaderModuleDescriptor.hints = null;
-
-    // TEMP
-    Resource shader;
-    resource::load(ResourceType.SHADER, "builtin", &shader)!;
-    String code = resources::shader::get_code(&shader)!;
-    String vertex_entry = resources::shader::get_entry(&shader, SupportedShaderStage.VERTEX);
-    String fragment_entry = resources::shader::get_entry(&shader, SupportedShaderStage.FRAGMENT);
-    // TEMP end
 
     // TODO: use the config for determine what to use here
     ShaderModuleWGSLDescriptor shaderModuleWGSLDescriptor;
@@ -295,6 +311,52 @@ $endif
     self.create_buffers()!;
 }
 
+fn VertexAttribute[] get_vertex_attributes(String vertex_type)
+{
+    switch (vertex_type)
+    {
+        case "vertex2d":
+            VertexAttribute[math::vertex2d_attribute_count()] attributes;
+            for (usz i = 0; i < math::vertex2d_attribute_count(); i++)
+            {
+                VertexAttribute attribute;
+                attribute.shaderLocation = (CULong) i;
+                attribute.offset = math::vertex2d_attribute_offset(i);
+                attribute.format = math::vertex2d_attribute_format(i).to_webgpu_format();
+                attributes[i] = attribute;
+            }
+
+            return attributes[0..];    
+        case "vertex3d": 
+            VertexAttribute[math::vertex3d_attribute_count()] attributes;
+            for (usz i = 0; i < math::vertex3d_attribute_count(); i++)
+            {
+                VertexAttribute attribute;
+                attribute.shaderLocation = (CULong) i;
+                attribute.offset = math::vertex3d_attribute_offset(i);
+                attribute.format = math::vertex3d_attribute_format(i).to_webgpu_format();
+                attributes[i] = attribute;
+            }
+
+            return attributes[0..];          
+    } 
+
+    VertexAttribute[1] attributes;
+    return attributes[0..];
+}
+
+fn void set_vertex_stride(String vertex_type, VertexBufferLayout* vertexBufferLayout)
+{
+    if (vertex_type == "vertex2d")
+    {
+        vertexBufferLayout.arrayStride = Vertex2d.sizeof;
+    }
+    else if (vertex_type == "vertex3d")
+    {
+        vertexBufferLayout.arrayStride = Vertex3d.sizeof;
+    }
+}
+
 fn TextureView WebGPUBackend.get_next_surface_texture_view(WebGPUBackend* self)
 {
     SurfaceTexture texture;
@@ -355,22 +417,28 @@ fn void! WebGPUBackend.create_buffers(WebGPUBackend* self)
     {
         { 
             .position = { -0.5, -0.5 },
+            .color = { 1.0, 0.0, 0.0, 1.0 },
         },
         { 
             .position = { 0.5, -0.5 },
+            .color = { 0.0, 1.0, 0.0, 1.0 },
         },
         { 
             .position = { 0.0, 0.5 },
+            .color = { 0.0, 0.0, 1.0, 1.0 },
         },
 
         {
             .position = { -0.55, -0.5 },
+            .color = { 1.0, 1.0, 0.0, 1.0 },
         },
         {
             .position = { -0.05, 0.5 },
+            .color = { 1.0, 0.0, 1.0, 1.0 },
         },
         {
             .position = { -0.55, 0.5 },
+            .color = { 0.0, 1.0, 1.0, 1.0 },
         },
     };
 
@@ -386,6 +454,8 @@ fn void! WebGPUBackend.create_buffers(WebGPUBackend* self)
     bufferDescriptor.size = (CULongLong) (vertices.len * Vertex2d.sizeof); //vertex_buffer_size(Vertex2d);
     bufferDescriptor.mappedAtCreation = CBool.FALSE;
     self.vertex_buffer.buffer = self.device.createBuffer(&bufferDescriptor);
+
+    memory::submit_gpu_memory_allocation((usz) bufferDescriptor.size, GPUMemoryTag.BUFFER);
 
     self.queue.writeBuffer(self.vertex_buffer.buffer, 0, vertices.ptr, vertices.len * Vertex2d.sizeof);
 }
@@ -416,7 +486,9 @@ fn void! WebGPUBackend.destroy_buffers(WebGPUBackend* self)
     //self.buffer1.release();
     //self.buffer2.buffer.release();
 
+    CULongLong size = self.vertex_buffer.buffer.getSize();
     self.vertex_buffer.buffer.release();
+    memory::submit_gpu_memory_deallocation((usz) size, GPUMemoryTag.BUFFER);
 }
 
 fn void! WebGPUBackend.begin_renderpass(WebGPUBackend* self, RenderPassType type) @dynamic
@@ -545,6 +617,8 @@ fn void! WebGPUBackend.print_adapter_info(WebGPUBackend* self)
     report.appendf("- maxTextureDimension3D: %d\n", limits.limits.maxTextureDimension3D);
     report.appendf("- maxTextureArrayLayers: %d\n", limits.limits.maxTextureArrayLayers);
     report.appendf("- maxVertexAttributes: %d\n", limits.limits.maxVertexAttributes);
+    report.appendf("- maxInterStageShaderComponents: %d\n", limits.limits.maxInterStageShaderComponents);
+    report.appendf("- maxBufferSize: %d\n", limits.limits.maxBufferSize);
 
     usz featureCount = self.adapter.enumerateFeatures(null);
     report.append("Features:\n");
@@ -610,6 +684,8 @@ fn void! WebGPUBackend.print_device_info(WebGPUBackend* self)
     report.appendf("- maxTextureDimension3D: %d\n", limits.limits.maxTextureDimension3D);
     report.appendf("- maxTextureArrayLayers: %d\n", limits.limits.maxTextureArrayLayers);
     report.appendf("- maxVertexAttributes: %d\n", limits.limits.maxVertexAttributes);
+    report.appendf("- maxInterStageShaderComponents: %d\n", limits.limits.maxInterStageShaderComponents);
+    report.appendf("- maxBufferSize: %d\n", limits.limits.maxBufferSize);
 
     usz featureCount = self.device.enumerateFeatures(null);
     report.append("Features:\n");
@@ -701,6 +777,7 @@ fn webgpu::RequiredLimits! WebGPUBackend.get_requirements(WebGPUBackend* self, R
     limits.limits.maxVertexBuffers = requirements.max_vertex_buffers;
     limits.limits.maxBufferSize = requirements.max_buffer_size;
     limits.limits.maxVertexBufferArrayStride = requirements.max_vertex_buffer_stride;
+    limits.limits.maxInterStageShaderComponents = requirements.max_interstage_shader_components;
 
     return limits;
 }

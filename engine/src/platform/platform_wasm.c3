@@ -157,30 +157,30 @@ fn usz vertex3d_get_size() @wasm @export("vertex3d_get_size") @if($feature(PLATF
 
 fn usz vertex2d_get_attribute_count() @wasm @export("vertex2d_get_attribute_count") @if($feature(PLATFORM_WEB))
 {
-    return Vertex2d.membersof.len;
+    return math::vertex2d_attribute_count();
 }
 
 fn usz vertex3d_get_attribute_count() @wasm @export("vertex3d_get_attribute_count") @if($feature(PLATFORM_WEB))
 {
-    return Vertex3d.membersof.len;
+    return math::vertex3d_attribute_count();
 }
 
 fn usz vertex2d_get_attribute_offset(usz index) @wasm @export("vertex2d_get_attribute_offset") @if($feature(PLATFORM_WEB))
 {
-    return utils::offset_of_index(Vertex2d, index);
+    return math::vertex2d_attribute_offset(index);
 }
 
 fn usz vertex3d_get_attribute_offset(usz index) @wasm @export("vertex3d_get_attribute_offset") @if($feature(PLATFORM_WEB))
 {
-    return utils::offset_of_index(Vertex3d, index);
+    return math::vertex3d_attribute_offset(index);
 }
 
 fn usz vertex2d_get_attribute_format(usz index) @wasm @export("vertex2d_get_attribute_format") @if($feature(PLATFORM_WEB))
 {
-    return (usz) math::vertex2d_formats()[index];
+    return (usz) math::vertex2d_attribute_format(index);
 }
 
 fn usz vertex3d_get_attribute_format(usz index) @wasm @export("vertex3d_get_attribute_format") @if($feature(PLATFORM_WEB))
 {
-    return (usz) math::vertex3d_formats()[index];
+    return (usz) math::vertex3d_attribute_format(index);
 }

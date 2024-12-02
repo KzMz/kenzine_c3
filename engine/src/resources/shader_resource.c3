@@ -22,6 +22,7 @@ struct ShaderData
 {
     String renderpass;
     String shader_file;
+    String vertex_type;
     SupportedShaderFormat shader_format;
 
     List(<ShaderStageData>) stages;
@@ -57,6 +58,7 @@ fn void! ShaderResourceLoaderFunctions.load(ShaderResourceLoaderFunctions* self,
     data.renderpass = json.get_string("renderpass")!;//.copy(memory::kallocator());
     data.shader_format = renderer::format_from_string(json.get_string("format")!);
     data.shader_file = json.get_string("shader_file")!;//.copy(memory::kallocator());
+    data.vertex_type = json.get_string("vertex_type")!;//.copy(memory::kallocator());
 
     Object* stages = json.get("stages")!;
     usz count = stages.get_len();
@@ -131,6 +133,12 @@ fn String get_entry(Resource* resource, SupportedShaderStage stage)
     }
 
     return "";
+}
+
+fn String get_vertex_type(Resource* resource)
+{
+    ShaderData* data = utils::slice_to_ptr(ShaderData, resource.data);
+    return data.vertex_type;
 }
 
 // TODO: support for different formats and stages. Webgpu just has everything put inside the same file

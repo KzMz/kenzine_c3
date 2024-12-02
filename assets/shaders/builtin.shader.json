@@ -5,7 +5,8 @@
   },
   "renderpass": "world",
   "format": "wgsl",
-  "shader_file": "builtin.wgsl", 
+  "shader_file": "builtin.wgsl",
+  "vertex_type": "vertex2d", 
   "stages": [
     {
       "stage": "vertex",

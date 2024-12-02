@@ -70,13 +70,14 @@ struct RendererRequirements
     uint max_vertex_buffers;
     uint max_buffer_size;
     uint max_vertex_buffer_stride;
+    uint max_interstage_shader_components;
 }
 
 struct RendererParams
 {
     SupportedBackend backend_type;
 
-    Color clear_color;
+    Color4f clear_color;
     ZString device_label;
     usz swapchain_width;
     usz swapchain_height;

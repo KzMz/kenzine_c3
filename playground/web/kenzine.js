@@ -160,8 +160,9 @@ class Kenzine {
         const format = this.exports.vertex2d_get_attribute_format(attribute_index);
         
         switch (format) {
-            case 20: return "float32x2";
-            case 21: return "float32x3";
+            case 0: return "float32x2";
+            case 1: return "float32x3";
+            case 2: return "float32x4";
         }
         
         return "float32x2";

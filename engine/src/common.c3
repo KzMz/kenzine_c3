@@ -2,15 +2,9 @@
 
 import webgpu;
 
-struct Color
-{
-    float r;
-    float g;
-    float b;
-    float a;
-}
+def Color4f = float[<4>];
 
-fn webgpu::Color Color.to_webgpu_color(Color color)
+fn webgpu::Color Color4f.to_webgpu_color(Color4f color)
 {
     return webgpu::Color
     {

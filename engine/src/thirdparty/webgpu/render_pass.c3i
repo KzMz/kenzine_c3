@@ -59,7 +59,7 @@ fn void RenderPassEncoder.setStencilReference(RenderPassEncoder encoder,
     CUInt reference) @extern("wgpuRenderPassEncoderSetStencilReference");
 
 fn void RenderPassEncoder.setVertexBuffer(RenderPassEncoder encoder,
-    CUInt slot, Buffer buffer, CULong offset, CULong size)
+    CUInt slot, Buffer buffer, CULong offset, CULongLong size)
     @extern("wgpuRenderPassEncoderSetVertexBuffer");
 
 fn void RenderPassEncoder.setViewport(RenderPassEncoder encoder,

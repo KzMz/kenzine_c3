@@ -21,8 +21,16 @@ enum MemoryTag : int(String description)
     SHADER = "SHADER\t",
     WASM = "WASM\t",
     BINARY = "BINARY\t",
+
+    GPU_BUFFER = "GPU BUFFER",
     
     CUSTOM = "CUSTOM\t",
+}
+
+enum GPUMemoryTag : int(String description)
+{
+    NONE = "UNTAGGED",
+    BUFFER = "BUFFER\t",
 }
 
 struct TaggedMemory
@@ -32,12 +40,23 @@ struct TaggedMemory
     Allocator allocator;
 }
 
+struct TaggedGPUMemory
+{
+    usz total_size;
+    usz num_allocations;
+}
+
 struct MemoryState
 {
     usz total_size;
     usz total_allocations;
 
     TaggedMemory[MemoryTag.len] tagged_memory;
+
+    usz total_gpu_size;
+    usz total_gpu_allocations;
+
+    TaggedGPUMemory[GPUMemoryTag.len] tagged_gpu_memory;
 }
 
 struct MemoryParams
@@ -97,6 +116,15 @@ fn void! MemorySystem.initialize(MemorySystem* self, MemoryParams* params) @dyna
         memory_state.tagged_memory[i].total_size = 0;
         memory_state.tagged_memory[i].num_allocations = 0;
         memory_state.tagged_memory[i].allocator = params.default_allocator;
+    }
+
+    memory_state.total_gpu_size = 0;
+    memory_state.total_gpu_allocations = 0;
+
+    for (int i = 0; i < GPUMemoryTag.len; i++)
+    {
+        memory_state.tagged_gpu_memory[i].total_size = 0;
+        memory_state.tagged_gpu_memory[i].num_allocations = 0;
     }
 
     default_allocator = params.default_allocator;
@@ -175,6 +203,38 @@ fn void! free(void* ptr, usz size, MemoryTag tag)
     memory_state.tagged_memory[tag].num_allocations--;
 }
 
+fn void submit_memory_allocation(usz size, MemoryTag tag)
+{
+    memory_state.total_size += size;
+    memory_state.total_allocations++;
+    memory_state.tagged_memory[tag].total_size += size;
+    memory_state.tagged_memory[tag].num_allocations++;
+}
+
+fn void submit_memory_deallocation(usz size, MemoryTag tag)
+{    
+    memory_state.total_size -= size;
+    memory_state.total_allocations--;
+    memory_state.tagged_memory[tag].total_size -= size;
+    memory_state.tagged_memory[tag].num_allocations--;
+}
+
+fn void submit_gpu_memory_allocation(usz size, GPUMemoryTag tag)
+{
+    memory_state.total_gpu_size += size;
+    memory_state.total_gpu_allocations++;
+    memory_state.tagged_gpu_memory[tag].total_size += size;
+    memory_state.tagged_gpu_memory[tag].num_allocations++;
+}
+
+fn void submit_gpu_memory_deallocation(usz size, GPUMemoryTag tag)
+{
+    memory_state.total_gpu_size -= size;
+    memory_state.total_gpu_allocations--;
+    memory_state.tagged_gpu_memory[tag].total_size -= size;
+    memory_state.tagged_gpu_memory[tag].num_allocations--;
+}
+
 fn Allocator get_allocator(MemoryTag tag)
 {
     if (memory_state.tagged_memory[tag].allocator)
@@ -240,6 +300,21 @@ fn void! log_memory_report()
             description,
             utils::size_string(size),
             memory_state.tagged_memory[i].num_allocations);
+    }
+
+    size = memory_state.total_gpu_size;
+    report.append("\n\nGPU Memory Report\n");
+    report.appendf("Total size: %s\t Total allocations: %d\n", utils::size_string(size), memory_state.total_gpu_allocations);
+
+    for (int i = 0; i < GPUMemoryTag.len; i++)
+    {
+        size = memory_state.tagged_gpu_memory[i].total_size;
+
+        String description = GPUMemoryTag.values[i].description;
+        report.appendf("%s\tTotal size:\t%s\tTotal allocations:\t%d\n",
+            description,
+            utils::size_string(size),
+            memory_state.tagged_gpu_memory[i].num_allocations);
     }
 
     log::log(LogLevel.INFO, report.str_view())!;

@@ -10,7 +10,7 @@ fn BufferMapState Buffer.getMapState(Buffer buffer, usz offset, usz size) @exter
 
 fn BufferMappedRange Buffer.getMappedRange(Buffer buffer, usz offset, usz size) @extern("wgpuBufferGetMappedRange");
 
-fn CULong Buffer.getSize(Buffer buffer) @extern("wgpuBufferGetSize");
+fn CULongLong Buffer.getSize(Buffer buffer) @extern("wgpuBufferGetSize");
 
 fn BufferUsage Buffer.getUsage(Buffer buffer) @extern("wgpuBufferGetUsage");
 
