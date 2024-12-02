@@ -6,6 +6,8 @@ Just run "build.bat" for native build and build-web.bat for web build
 
 ## TODO
 - [x] Add GPU memory stats to memory module
+- [ ] Index Buffers
+- [ ] Resize handling
 - [ ] Geometry asset definition and loader
 - [ ] Material asset definition and loader
 - [ ] Test hard-coded 3d rendering

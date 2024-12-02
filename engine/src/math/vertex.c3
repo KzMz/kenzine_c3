@@ -4,7 +4,7 @@ import std::math::vector;
 import kenzine::common;
 import kenzine::utils;
 
-distinct Index = usz;
+distinct Index = uint;
 
 enum VertexFormat
 {

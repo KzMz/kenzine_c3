@@ -56,6 +56,12 @@ struct VertexBuffer
     usz vertex_count;
 }
 
+struct IndexBuffer
+{
+    webgpu::Buffer buffer;
+    usz index_count;
+}
+
 struct WebGPUBackend(RendererBackend)
 {
     webgpu::Instance instance;
@@ -66,6 +72,7 @@ struct WebGPUBackend(RendererBackend)
     webgpu::Surface surface;
 
     VertexBuffer vertex_buffer;
+    IndexBuffer index_buffer;
 
     webgpu::RenderPipeline world_pipeline;
 
@@ -423,22 +430,13 @@ fn void! WebGPUBackend.create_buffers(WebGPUBackend* self)
             .position = { 0.5, -0.5 },
             .color = { 0.0, 1.0, 0.0, 1.0 },
         },
-        { 
-            .position = { 0.0, 0.5 },
+        {
+            .position = { 0.5, 0.5 },
             .color = { 0.0, 0.0, 1.0, 1.0 },
         },
-
         {
-            .position = { -0.55, -0.5 },
+            .position = { -0.5, 0.5 },
             .color = { 1.0, 1.0, 0.0, 1.0 },
-        },
-        {
-            .position = { -0.05, 0.5 },
-            .color = { 1.0, 0.0, 1.0, 1.0 },
-        },
-        {
-            .position = { -0.55, 0.5 },
-            .color = { 0.0, 1.0, 1.0, 1.0 },
         },
     };
 
@@ -458,6 +456,26 @@ fn void! WebGPUBackend.create_buffers(WebGPUBackend* self)
     memory::submit_gpu_memory_allocation((usz) bufferDescriptor.size, GPUMemoryTag.BUFFER);
 
     self.queue.writeBuffer(self.vertex_buffer.buffer, 0, vertices.ptr, vertices.len * Vertex2d.sizeof);
+
+    Index[] indices = 
+    {
+        0, 1, 2,
+        0, 2, 3
+    };
+
+    self.index_buffer.index_count = indices.len;
+
+    usage.vertex = false;
+    usage.index = true;
+    bufferDescriptor.label = "Kenzine Index Buffer";
+    bufferDescriptor.usage = usage;
+    bufferDescriptor.size = (CULongLong) (indices.len * Index.sizeof); 
+    bufferDescriptor.size = (bufferDescriptor.size + 3) & ~3;
+    self.index_buffer.buffer = self.device.createBuffer(&bufferDescriptor);
+
+    memory::submit_gpu_memory_allocation((usz) bufferDescriptor.size, GPUMemoryTag.BUFFER);
+
+    self.queue.writeBuffer(self.index_buffer.buffer, 0, indices.ptr, indices.len * Index.sizeof);
 }
 
 fn void on_buffer2_mapped(BufferMapAsyncStatus status, void* buffer)
@@ -488,6 +506,10 @@ fn void! WebGPUBackend.destroy_buffers(WebGPUBackend* self)
 
     CULongLong size = self.vertex_buffer.buffer.getSize();
     self.vertex_buffer.buffer.release();
+    memory::submit_gpu_memory_deallocation((usz) size, GPUMemoryTag.BUFFER);
+
+    size = self.index_buffer.buffer.getSize();
+    self.index_buffer.buffer.release();
     memory::submit_gpu_memory_deallocation((usz) size, GPUMemoryTag.BUFFER);
 }
 
@@ -542,8 +564,10 @@ fn void! WebGPUBackend.draw_frame(WebGPUBackend* self, double delta_time) @dynam
     self.frame_state.renderpass.setPipeline(self.world_pipeline);
 
     self.frame_state.renderpass.setVertexBuffer(0, self.vertex_buffer.buffer, 0, self.vertex_buffer.buffer.getSize());
+    self.frame_state.renderpass.setIndexBuffer(self.index_buffer.buffer, IndexFormat.UINT32, 0, self.index_buffer.buffer.getSize());
 
-    self.frame_state.renderpass.draw((CUInt) self.vertex_buffer.vertex_count, 1, 0, 0);
+    //self.frame_state.renderpass.draw((CUInt) self.vertex_buffer.vertex_count, 1, 0, 0);
+    self.frame_state.renderpass.drawIndexed((CUInt) self.index_buffer.index_count, 1, 0, 0, 0);
 }
 
 fn void! WebGPUBackend.end_frame(WebGPUBackend* self, double delta_time) @dynamic

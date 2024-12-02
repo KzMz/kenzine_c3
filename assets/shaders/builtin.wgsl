@@ -18,5 +18,6 @@ fn vertex_main(in: VertexInput) -> VertexOutput {
 
 @fragment
 fn fragment_main(in: VertexOutput) -> @location(0) vec4f {
-    return in.color;
+    let linear_color = pow(in.color, vec4f(2.2)); // Gamma-correction
+    return linear_color;
 }

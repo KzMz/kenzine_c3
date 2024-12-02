@@ -43,7 +43,7 @@ fn void RenderPassEncoder.setBindGroup(RenderPassEncoder encoder, CUInt groupInd
 	usz dynamicOffsetCount = 0, CUInt* dynamicOffsets = null) @extern("wgpuRenderPassEncoderSetBindGroup");
 
 fn void RenderPassEncoder.setIndexBuffer(RenderPassEncoder encoder,
-    Buffer buffer, IndexFormat format, CULong offset, CULong size)
+    Buffer buffer, IndexFormat format, CULong offset, CULongLong size)
     @extern("wgpuRenderPassEncoderSetIndexBuffer");
 
 fn void RenderPassEncoder.setLabel(RenderPassEncoder encoder, ZString label)
