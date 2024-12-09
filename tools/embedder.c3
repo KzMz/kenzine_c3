@@ -63,8 +63,8 @@ fn bool! walk_asset(Path path, bool is_dir, void* data)
                 }
             }
 
-            Object* dependencies = resource_metadata.get("dependencies")!;
-            if (dependencies != null)
+            Object*! dependencies = resource_metadata.get("dependencies");
+            if (try dependencies && dependencies != null)
             {
                 for (usz i = 0; i < dependencies.get_len(); i++)
                 {
