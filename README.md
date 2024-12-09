@@ -5,8 +5,8 @@
 Just run "build.bat" for native build and build-web.bat for web build
 
 ## TODO
-- [x] Uniform Buffers
 - [x] Window Resize handling
+- [x] Embedder improvements by specifying if an asset (and its dependencies) should be embedded or not
 - [ ] Geometry asset definition and loader
 - [ ] Material asset definition and loader
 - [ ] WebGPU requirements in JS

@@ -1,7 +1,11 @@
 ﻿{
   "resource": {
     "type": "shader",
-    "version": "1.0"
+    "version": "1.0",
+    "embedded": true,
+    "dependencies": [
+      "builtin.wgsl"
+    ]
   },
   "renderpass": "world",
   "format": "wgsl",

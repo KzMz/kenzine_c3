@@ -43,7 +43,21 @@ fn ResourceMetadata! get_resource_metadata_checked(Object* json, ResourceType ty
             return ResourceSystemError.RESOURCE_TYPE_MISMATCH?;
         }
 
-        //metadata.custom_type = resource_metadata.get("custom_type")?.to_string()!;
+        bool! embedded = resource_metadata.get_bool("embedded");
+        if (try embedded)
+        {
+            metadata.embedded = embedded;
+        }
+        else
+        {
+            metadata.embedded = false;
+        }
+
+        String! custom_type = resource_metadata.get_string("custom_type");
+        if (try custom_type)
+        {
+            metadata.custom_type = custom_type.copy();
+        }
     }
 
     return metadata;
@@ -87,7 +101,6 @@ $if(!$feature(PLATFORM_WEB)):
     usz size = io::file::get_size(path)!;
     char[] buffer = memory::kallocate_many(char, size + 1, get_memory_tag(type));
 
-    
     cache::add(cache_key.str_view(), buffer)!;
 
     io::file::load_buffer(path, buffer)!;

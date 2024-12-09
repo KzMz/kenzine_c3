@@ -17,6 +17,7 @@ struct ResourceMetadata
 {
     String version;
     String custom_type;
+    bool embedded;
 }
 
 struct Resource
