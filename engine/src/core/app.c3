@@ -9,6 +9,7 @@ import kenzine::renderer;
 import kenzine::resource;
 import kenzine::resources;
 import std::io;
+import std::time;
 
 struct ApplicationConfig
 {
@@ -28,7 +29,6 @@ struct Application
     bool suspended;
     int current_width;
     int current_height;
-    double last_time;
     usz temp_mark;
 
     FrameState frame_state;
@@ -44,7 +44,7 @@ struct Application
 
 struct FrameState
 {
-    double running_time;
+    NanoDuration running_time;
     int frame_number;
 }
 
@@ -110,15 +110,13 @@ $endif
 
     app.log_system.log(LogLevel.INFO, "Application initialized")!;
 
+$if(!$feature(PLATFORM_WEB)):
     memory::log_memory_report()!;
+$endif
 }
 
 fn void! Application.run(Application* self)
 {
-    app.clock.start();
-    app.clock.update();
-    app.last_time = app.clock.elapsed_time;
-
     app.frame_state.running_time = 0;
     app.frame_state.frame_number = 0;
     app.target_frame_time = 1.0 / app.game.config.target_fps;
@@ -126,6 +124,7 @@ fn void! Application.run(Application* self)
 $if($feature(PLATFORM_WEB)):
 
 $else
+    app.clock = clock::now();
     defer app.shutdown()!!;
 
     while (app.running)
@@ -137,10 +136,8 @@ $else
             continue;
         }
 
-        app.clock.update();
-        double current_time = app.clock.elapsed_time;
-        double delta_time = current_time - app.last_time;
-        double frame_start_time = platform::get_absolute_time();
+        double delta_time = app.clock.mark().to_sec();
+        Clock frame_clock = clock::now();
 
         app.game.update(delta_time)!;
         app.game.render(delta_time)!;
@@ -149,11 +146,10 @@ $else
         packet.delta_time = delta_time;
         app.renderer_system.draw(&packet)!;
 
-        double frame_end_time = platform::get_absolute_time();
-        double frame_time = frame_end_time - frame_start_time;
+        NanoDuration frame_time = frame_clock.mark();
         app.frame_state.running_time += frame_time;
 
-        double sleep_time = app.target_frame_time - frame_time;
+        double sleep_time = app.target_frame_time - frame_time.to_sec();
         bool limit_fps = false;
         if (sleep_time > 0 && limit_fps)
         {
@@ -164,7 +160,6 @@ $else
         app.frame_state.frame_number++;
 
         // TODO: input update
-        app.last_time = current_time;
         allocator::temp().reset(app.temp_mark);
     }
 $endif
@@ -174,8 +169,6 @@ fn void! Application.shutdown(Application* self)
 {
     app.game.shutdown()!;
     memory::free(app.game.state, app.game.state_size, MemoryTag.GAME)!;
-
-    io::printfn("Shutting down application")!;
 
     app.running = false;
     app.suspended = false;

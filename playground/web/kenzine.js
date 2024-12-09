@@ -18,6 +18,10 @@ function read_string_from_memory(wasm, buffer, len) {
     return decoder.decode(new Uint8ClampedArray(wasm.instance.exports.memory.buffer, buffer, len));
 }
 
+class Uniforms {
+    time = 0.0;
+}
+
 class Kenzine {
 
     constructor(canvas_id) {
@@ -31,10 +35,22 @@ class Kenzine {
         this.encoder = undefined;
         this.pass = undefined;
         this.pipeline = undefined;
+        this.worldPipelineLayout = undefined;
+        this.worldBindGroup = undefined;
+        this.worldBindGroupLayout = undefined;
+
         this.vertexBuffer = {
             buffer: undefined,
             count: 0
         };
+        this.indexBuffer = {
+            buffer: undefined,
+            count: 0
+        };
+        this.uniformBuffer = {
+            buffer: undefined,
+            uniforms: new Uniforms()
+        }
         this.clearColor = { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
 
         this.canvas = document.getElementById(canvas_id);
@@ -124,8 +140,9 @@ class Kenzine {
             renderer_end_renderpass: async (type) => {
                 await this.end_renderpass(type);
             },
-            renderer_set_clear_color: (r, g, b, a) => {
-                this.clearColor = { r, g, b, a };
+            renderer_set_clear_color: (color_ptr) => {
+                const color = new Float32Array(this.memory.buffer, color_ptr, 4);
+                this.clearColor = { r: color[0], g: color[1], b: color[2], a: color[3] };
             },
         };
     }
@@ -137,8 +154,10 @@ class Kenzine {
     }
 
     frame(timestamp) {
+        const delta_time = (timestamp - this.previousTimestamp) / 1000.0;
         this.previousTimestamp = timestamp;
-        this.exports.app_loop();
+
+        this.exports.app_loop(delta_time);
         window.requestAnimationFrame(this.frame.bind(this));
     }
 
@@ -152,8 +171,11 @@ class Kenzine {
     }
 
     move(x, y) {
-        this.canvas.style.left = `${x}px`;
-        this.canvas.style.top = `${y}px`;
+        const currentLeft = this.canvas.style.left;
+        const currentTop = this.canvas.style.top;
+
+        this.canvas.style.left = `calc(${x}px + ${currentLeft})`;
+        this.canvas.style.top = `calc(${y}px + ${currentTop})`;
     }
 
     get_attribute_format_string(attribute_index) {
@@ -207,10 +229,12 @@ class Kenzine {
             arrayStride: this.exports.vertex2d_get_size(),
             attributes: []
         };
+
         const vertexAttributeCount = this.exports.vertex2d_get_attribute_count();
         for (let i = 0; i < vertexAttributeCount; i++) {
             const attribute_offset = this.exports.vertex2d_get_attribute_offset(i);
             const attribute_format = this.get_attribute_format_string(i);
+
             vertexBufferLayout.attributes.push({
                 shaderLocation: i,
                 format: attribute_format,
@@ -241,8 +265,27 @@ class Kenzine {
             ]
         };
 
+        this.worldBindGroupLayout = this.device.createBindGroupLayout({
+            label: "Kenzine Bind Group Layout",
+            entries: [
+                {
+                    binding: 0,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {
+                        type: "uniform",
+                        minBindingSize: 4 * 4
+                    }
+                }
+            ]
+        });
+
+        this.worldPipelineLayout = this.device.createPipelineLayout({
+            label: "Kenzine Pipeline Layout",
+            bindGroupLayouts: [this.worldBindGroupLayout]
+        });
+
         this.pipeline = this.device.createRenderPipeline({
-            layout: "auto",
+            layout: this.worldPipelineLayout,
             vertex: vertex,
             fragment: fragment,
             primitive: {
@@ -251,6 +294,9 @@ class Kenzine {
         });
 
         this.create_buffers();
+        this.create_bindgroups();
+
+        this.exports.log_memory_report();
 
         window.requestAnimationFrame((timestamp) => {
             this.previousTimestamp = timestamp;
@@ -261,33 +307,79 @@ class Kenzine {
     create_buffers() {
         // TODO: retrieve from wasm after we have geometry assets
         const vertices = new Float32Array([
-            -0.5, -0.5,
-             0.5, -0.5,
-             0.0,  0.5,
-
-            -0.55, -0.5,
-            -0.05,  0.5,
-            -0.55,  0.5
+            -0.5, -0.5, 0.0, 0.0,     1.0, 0.0, 0.0, 1.0,
+             0.5, -0.5, 0.0, 0.0,     0.0, 1.0, 0.0, 1.0,
+             0.5,  0.5, 0.0, 0.0,     0.0, 0.0, 1.0, 1.0,
+            -0.5,  0.5, 0.0, 0.0,     1.0, 1.0, 0.0, 1.0,
         ]);
 
+        this.vertexBuffer.count = vertices.length / 6;
         this.vertexBuffer.buffer = this.device.createBuffer({
             label: "Kenzine Vertex Buffer",
             size: vertices.byteLength,
             usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
         });
-        this.vertexBuffer.count = vertices.length / 2;
 
         this.device.queue.writeBuffer(this.vertexBuffer.buffer, 0, vertices);
+        this.exports.submit_gpu_memory_allocation(this.vertexBuffer.buffer.size, 1);
+
+        const indices = new Uint32Array([
+            0, 1, 2,
+            0, 2, 3
+        ]);
+
+        this.indexBuffer.buffer = this.device.createBuffer({
+            label: "Kenzine Index Buffer",
+            size: indices.byteLength,
+            usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
+        });
+        this.indexBuffer.count = indices.length;
+
+        this.device.queue.writeBuffer(this.indexBuffer.buffer, 0, indices);
+        this.exports.submit_gpu_memory_allocation(this.indexBuffer.buffer.size, 1);
+
+        this.uniformBuffer.buffer = this.device.createBuffer({
+            label: "Kenzine Uniform Buffer",
+            size: 4 * 4,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+
+        this.uniformBuffer.uniforms.time = 1.0;
+        this.device.queue.writeBuffer(this.uniformBuffer.buffer, 0, new Float32Array([this.uniformBuffer.uniforms.time, 0.0, 0.0, 0.0]));
+        this.exports.submit_gpu_memory_allocation(this.uniformBuffer.buffer.size, 1);
+    }
+
+    create_bindgroups() {
+        this.worldBindGroup = this.device.createBindGroup({
+            layout: this.worldBindGroupLayout,
+            entries: [
+                {
+                    binding: 0,
+                    resource: {
+                        buffer: this.uniformBuffer.buffer,
+                        offset: 0,
+                        size: 4 * 4
+                    }
+                }
+            ]
+        });
     }
 
     async begin_frame(delta_time) {
+        this.uniformBuffer.uniforms.time += delta_time;
+        this.device.queue.writeBuffer(this.uniformBuffer.buffer, 0, new Float32Array([this.uniformBuffer.uniforms.time, 0.0, 0.0, 0.0]));
+
         this.encoder = this.device.createCommandEncoder();
     }
 
     async draw_frame(delta_time) {
         this.pass.setPipeline(this.pipeline);
+
         this.pass.setVertexBuffer(0, this.vertexBuffer.buffer);
-        this.pass.draw(this.vertexBuffer.count);
+        this.pass.setIndexBuffer(this.indexBuffer.buffer, "uint32", 0);
+        this.pass.setBindGroup(0, this.worldBindGroup);
+
+        this.pass.drawIndexed(this.indexBuffer.count, 1, 0, 0, 0);
     }
 
     async end_frame(delta_time) {
@@ -313,8 +405,16 @@ class Kenzine {
     }
 
     async shutdown_renderer() {
+        this.uniformBuffer.buffer = undefined;
+        this.indexBuffer.buffer = undefined;
+        this.vertexBuffer.buffer = undefined;
+        this.pipeline = undefined;
+        this.pass = undefined;
+        this.encoder = undefined;
+        this.context = undefined;
+
         this.device = undefined;
-        this.adapter = undefined
+        this.adapter = undefined;
     }
 
     set title(title) {

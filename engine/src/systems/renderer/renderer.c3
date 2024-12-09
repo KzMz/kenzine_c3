@@ -71,6 +71,9 @@ struct RendererRequirements
     uint max_buffer_size;
     uint max_vertex_buffer_stride;
     uint max_interstage_shader_components;
+    uint max_bind_groups;
+    uint max_uniform_buffers_per_shader_stage;
+    uint max_uniform_buffer_binding_size;
 }
 
 struct RendererParams

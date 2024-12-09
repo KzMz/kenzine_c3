@@ -8,10 +8,16 @@ struct VertexOutput {
     @location(0) color: vec4f,
 }
 
+@group(0) @binding(0) var<uniform> uTime: f32;
+
 @vertex
 fn vertex_main(in: VertexInput) -> VertexOutput {
     var out: VertexOutput;
-    out.position = vec4f(in.position, 0.0, 1.0);
+
+    var offset = vec2f(0.0, 0.0);
+    offset += 0.3 * vec2f(cos(uTime), sin(uTime));
+
+    out.position = vec4f(in.position + offset, 0.0, 1.0);
     out.color = in.color;
     return out;
 }

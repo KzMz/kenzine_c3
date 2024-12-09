@@ -39,7 +39,10 @@ fn void main() @export("main") @wasm
                 .max_vertex_buffers = 1,
                 .max_buffer_size = 8 * 6 * float.sizeof,
                 .max_vertex_buffer_stride = 8 * float.sizeof,
-                .max_interstage_shader_components = 4
+                .max_interstage_shader_components = 4,
+                .max_bind_groups = 1,
+                .max_uniform_buffers_per_shader_stage = 1,
+                .max_uniform_buffer_binding_size = 16 * float.sizeof,
             },
         },
     };

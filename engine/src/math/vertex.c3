@@ -25,32 +25,26 @@ struct Vertex2d
 	Color4f color;
 }
 
-fn VertexFormat[] vertex2d_formats()
+VertexFormat[] vertex2d_formats =
 {
-	return 
-	{
-		VertexFormat.FLOAT32_2,
-		VertexFormat.FLOAT32_4,
-	};
-}
+    VertexFormat.FLOAT32_2,
+    VertexFormat.FLOAT32_4,
+};
 
-fn VertexFormat[] vertex3d_formats()
+VertexFormat[] vertex3d_formats =
 {
-	return 
-	{
-		VertexFormat.FLOAT32_3,
-		VertexFormat.FLOAT32_4,
-	};
-}
+    VertexFormat.FLOAT32_3,
+    VertexFormat.FLOAT32_4,
+};
 
 macro vertex2d_attribute_format(usz index)
 {
-	return vertex2d_formats()[index];
+	return vertex2d_formats[index];
 }
 
 macro vertex3d_attribute_format(usz index)
 {
-	return vertex3d_formats()[index];
+	return vertex3d_formats[index];
 }
 
 macro vertex2d_attribute_count()

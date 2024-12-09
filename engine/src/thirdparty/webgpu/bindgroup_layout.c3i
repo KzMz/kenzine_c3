@@ -18,7 +18,7 @@ struct BindGroupLayoutDescriptor {
 
 struct BindGroupLayoutEntry {
     ChainedStruct* next;
-    CUInt binding;
+    CULong binding;
     ShaderStage visibility;
     BufferBindingLayout buffer;
     SamplerBindingLayout sampler;
@@ -30,7 +30,7 @@ struct BufferBindingLayout {
     ChainedStruct* next;
     BufferBindingType type;
     CBool hasDynamicOffset;
-    CULong minBindingSize;
+    CULongLong minBindingSize;
 }
 
 struct TextureBindingLayout {

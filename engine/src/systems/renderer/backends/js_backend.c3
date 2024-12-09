@@ -15,7 +15,7 @@ struct JSBackend(RendererBackend)
 fn void! JSBackend.initialize(JSBackend* self, RendererParams* params) @dynamic
 {
 $if($feature(PLATFORM_WEB)):
-    wasm::renderer_set_clear_color(params.clear_color.r, params.clear_color.g, params.clear_color.b, params.clear_color.a);
+    wasm::renderer_set_clear_color(&params.clear_color);
     wasm::renderer_initialize();
 $endif
 }

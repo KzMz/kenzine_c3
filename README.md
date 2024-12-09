@@ -5,12 +5,12 @@
 Just run "build.bat" for native build and build-web.bat for web build
 
 ## TODO
-- [x] Add GPU memory stats to memory module
-- [ ] Index Buffers
+- [x] Index Buffers
+- [x] Uniform Buffers
 - [ ] Resize handling
+- [ ] WebGPU requirements in JS
 - [ ] Geometry asset definition and loader
 - [ ] Material asset definition and loader
-- [ ] Test hard-coded 3d rendering
 - [ ] Check for "inline" for structs to see if we can parent something and reduce code duplication
 - [ ] Choose and integrate an immediate mode GUI library for debug (nuklear, raygui)
 - [ ] stb_image integration (https://github.com/tonis2/stb.c3/)
@@ -19,3 +19,8 @@ Just run "build.bat" for native build and build-web.bat for web build
 - [ ] Support different shader formats like SPIR-V
 - [ ] Check whether a window library like RGFW or GLFW is beneficial to the project
 - [ ] Find a way to handle user-defined vertex and indices
+
+## References and links
+- WebGPU bindings: https://github.com/TheOnlySilverClaw/webgpu.c3l
+- Lot of interop wasm stuff: https://github.com/tsoding/koil
+- Win32 API interop stuff: https://github.com/kcvinker/cforms

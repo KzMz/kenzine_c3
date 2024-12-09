@@ -21,10 +21,10 @@ struct BindGroupDescriptor {
 
 struct BindGroupEntry {
     ChainedStruct* next;
-    CUInt binding;
+    CULong binding;
     Buffer buffer;
-    CULong offset;
-    CULong size;
+    CULongLong offset;
+    CULongLong size;
     Sampler sampler;
     TextureView textureView;
 }

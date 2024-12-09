@@ -9,7 +9,10 @@ import kenzine::resources;
 import kenzine::resource;
 import kenzine::utils;
 import kenzine::math;
+import kenzine::common;
+
 import std::io::os;
+import std::time;
 
 // Thanks to rexim https://github.com/c3lang/c3c/pull/1440
 extern fn void wasm_write(void* buffer, usz buffer_len) @if($feature(PLATFORM_WEB));
@@ -19,7 +22,7 @@ extern fn void canvas_resize(usz width, usz height) @if($feature(PLATFORM_WEB)) 
 extern fn void canvas_move(usz x, usz y) @if($feature(PLATFORM_WEB)) @extern("canvas_move");
 extern fn double get_absolute_time() @if($feature(PLATFORM_WEB)) @extern("get_absolute_time");
 
-extern fn void renderer_set_clear_color(float r, float g, float b, float a) @if($feature(PLATFORM_WEB)) @extern("renderer_set_clear_color");
+extern fn void renderer_set_clear_color(Color4f* c) @if($feature(PLATFORM_WEB)) @extern("renderer_set_clear_color");
 extern fn void renderer_initialize() @extern("renderer_initialize") @if($feature(PLATFORM_WEB));
 extern fn void renderer_shutdown() @extern("renderer_shutdown") @if($feature(PLATFORM_WEB));
 extern fn void renderer_begin_frame(double delta_time) @extern("renderer_begin_frame") @if($feature(PLATFORM_WEB));
@@ -38,7 +41,7 @@ fn void initialize_wasm(Game* game) @if($feature(PLATFORM_WEB))
     };
 }
 
-fn void! web_loop() @export("app_loop") @wasm @if($feature(PLATFORM_WEB))
+fn void! web_loop(double delta_time) @export("app_loop") @wasm @if($feature(PLATFORM_WEB))
 {
     platform::handle_messages();
 
@@ -47,11 +50,6 @@ fn void! web_loop() @export("app_loop") @wasm @if($feature(PLATFORM_WEB))
         return;
     }
 
-    app::app.clock.update();
-    double current_time = app::app.clock.elapsed_time;
-    double delta_time = current_time - app::app.last_time;
-    double frame_start_time = platform::get_absolute_time();
-
     app::app.game.update(delta_time)!;
     app::app.game.render(delta_time)!;
 
@@ -59,14 +57,11 @@ fn void! web_loop() @export("app_loop") @wasm @if($feature(PLATFORM_WEB))
     packet.delta_time = delta_time;
     app::app.renderer_system.draw(&packet)!;
 
-    double frame_end_time = platform::get_absolute_time();
-    double frame_time = frame_end_time - frame_start_time;
-    app::app.frame_state.running_time += frame_time;
+    app::app.frame_state.running_time += (NanoDuration) time::from_float(delta_time);
 
     app::app.frame_state.frame_number++;
 
     // TODO: input update
-    app::app.last_time = current_time;
     allocator::temp().reset(app::app.temp_mark);
 }
 
@@ -141,6 +136,21 @@ fn usz shader_get_entry_size(Resource* resource, SupportedShaderStage stage) @ex
 fn void* wasm_allocate(usz size) @wasm @export("allocate") @if($feature(PLATFORM_WEB))
 {
     return allocator::temp().acquire(size, AllocInitType.ZERO, 0)!!;
+}
+
+fn void wasm_submit_gpu_memory_allocation(usz size, GPUMemoryTag tag) @wasm @export("submit_gpu_memory_allocation") @if($feature(PLATFORM_WEB))
+{
+    memory::submit_gpu_memory_allocation(size, tag);
+}
+
+fn void wasm_submit_gpu_memory_deallocation(usz size, GPUMemoryTag tag) @wasm @export("submit_gpu_memory_deallocation") @if($feature(PLATFORM_WEB))
+{
+    memory::submit_gpu_memory_deallocation(size, tag);
+}
+
+fn void wasm_log_memory_report() @wasm @export("log_memory_report") @if($feature(PLATFORM_WEB))
+{
+    memory::log_memory_report()!!;
 }
 
 // Vertex Layout
