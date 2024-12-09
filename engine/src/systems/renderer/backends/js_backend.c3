@@ -66,3 +66,8 @@ fn void! JSBackend.check_requirements(JSBackend* self, RendererRequirements* req
 {
     
 }
+
+fn void! JSBackend.resize(JSBackend* self, usz width, usz height) @dynamic
+{
+
+}

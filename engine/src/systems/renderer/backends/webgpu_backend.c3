@@ -83,7 +83,9 @@ struct WebGPUBackend(RendererBackend)
     webgpu::AdapterInfo info;
     webgpu::Device device;
     webgpu::Queue queue;
+
     webgpu::Surface surface;
+    webgpu::SurfaceConfiguration surface_config;
 
     VertexBuffer vertex_buffer;
     IndexBuffer index_buffer;
@@ -118,6 +120,16 @@ fn webgpu::InstanceDescriptor create_instance_descriptor()
     webgpu::InstanceDescriptor descriptor;
     descriptor.next = null;
     return descriptor;
+}
+
+fn void! WebGPUBackend.resize(WebGPUBackend* self, usz width, usz height) @dynamic
+{
+    self.surface.unconfigure();
+
+    self.surface_config.width = (CUInt) width;
+    self.surface_config.height = (CUInt) height;
+
+    self.surface.configure(&self.surface_config);
 }
 
 fn void! WebGPUBackend.initialize(WebGPUBackend* self, RendererParams* params) @dynamic
@@ -219,6 +231,7 @@ $endif
     surfaceConfig.alphaMode = CompositeAlphaMode.AUTO;
 
     self.surface.configure(&surfaceConfig);
+    self.surface_config = surfaceConfig;
 
     RenderPipelineDescriptor pipelineDescriptor;
     pipelineDescriptor.next = null;

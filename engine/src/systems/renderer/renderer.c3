@@ -139,6 +139,11 @@ fn void! RendererSystem.draw(RendererSystem* self, RenderPacket* packet) @dynami
     renderer_state.backend.end_frame(packet.delta_time)!;
 }
 
+fn void! RendererSystem.resize(RendererSystem* self, int width, int height)
+{
+    renderer_state.backend.resize((usz) width, (usz) height)!;
+}
+
 fn void! RendererSystem.shutdown(RendererSystem* self) @dynamic
 {
     renderer_state.backend.shutdown()!;

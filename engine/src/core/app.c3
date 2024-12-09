@@ -213,7 +213,7 @@ fn bool! on_key_pressed_or_released(uint event_code, void* sender, void* listene
         return false;
     }
 
-    ushort key = *(ushort*) &&event_data.data[0:2];
+    ushort key = event_data.data.ushorts[0];
     app.log_system.log(LogLevel.INFO, "Key event received: %d", key)!;
 
     return true;
@@ -226,8 +226,8 @@ fn bool! on_resize(uint event_code, void* sender, void* listener, EventData even
         return false;
     }
 
-    int width = *(int*) &&event_data.data[0:4];
-    int height = *(int*) &&event_data.data[4:8];
+    int width = event_data.data.ints[0];
+    int height = event_data.data.ints[1];
 
     if (width == app.current_width && height == app.current_height)
     {
@@ -239,7 +239,7 @@ fn bool! on_resize(uint event_code, void* sender, void* listener, EventData even
 
     if (width == 0 || height == 0)
     {
-        app.log_system.log(LogLevel.INFO, "Window minimized")!;
+        log::log(LogLevel.INFO, "Window minimized")!;
         app.suspended = true;
         return true;
     }
@@ -247,14 +247,14 @@ fn bool! on_resize(uint event_code, void* sender, void* listener, EventData even
     {
         if (app.suspended)
         {
-            app.log_system.log(LogLevel.INFO, "Window restored")!;
+            log::log(LogLevel.INFO, "Window restored")!;
             app.suspended = false;
         }
         
-        // TODO: game resize
-        // TODO: renderer resize
+        app.game.resize(width, height)!;
+        app.renderer_system.resize(width, height)!;
     }
 
-    app.log_system.log(LogLevel.INFO, "Window resized to: %d x %d", width, height)!;
+    log::log(LogLevel.INFO, "Window resized to: %d x %d", app.current_width, app.current_height)!;
     return true;
 }

@@ -21,4 +21,6 @@ interface RendererBackend
     fn void! end_renderpass(RenderPassType type);
 
     fn void! check_requirements(RendererRequirements* requirements);
+
+    fn void! resize(usz width, usz height);
 }

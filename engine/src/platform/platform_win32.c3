@@ -127,6 +127,18 @@ fn LResult window_proc(Hwnd hWnd, uint msg, WParam wp, LParam lp) @private @if(e
             (void) event::trigger((int) SystemEventCode.APPLICATION_QUIT, null, event);
             return 1;
         }
+        case win32::WM_SIZE:
+        {
+            Rect rect;
+            win32::get_client_rect(hWnd, &rect);
+            int width = rect.right - rect.left;
+            int height = rect.bottom - rect.top;
+
+            EventData event;
+            event.data.ints[0] = width;
+            event.data.ints[1] = height;
+            (void) event::trigger((int) SystemEventCode.WINDOW_RESIZED, null, event);
+        }
     }
 
     return win32::def_window_proc(hWnd, msg, wp, lp);

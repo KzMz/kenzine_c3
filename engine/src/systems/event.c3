@@ -10,7 +10,15 @@ fault EventError
 
 struct EventData
 {
-    char[16] data;
+    union data
+    {
+        char[16] bytes;
+        uint[4] uints;
+        int[4] ints;
+        float[4] floats;
+        ushort[8] ushorts;
+        short[8] shorts;
+    }
 }
 
 enum SystemEventCode : int

@@ -109,6 +109,7 @@ const uint PM_REMOVE = 0x0001;
 
 // Message constants
 const uint WM_DESTROY = 0x0002;
+const uint WM_SIZE = 0x0005;
 const uint WM_CLOSE = 0x0010;
 const uint WM_QUIT = 0x0012;
 const uint WM_ERASEBKGND = 0x0014;
@@ -119,6 +120,7 @@ extern fn HCursor load_cursor(HInstance hInstance, LPCWStr lpCursorName) @extern
 
 extern fn short register_class(WndClass* lpWndClass) @extern("RegisterClassExW");
 extern fn Bool adjust_window_rect(Rect* lpRect, DWord dwStyle, Bool bMenu, DWord dwExStyle) @extern("AdjustWindowRectEx");
+extern fn Bool get_client_rect(Hwnd hWnd, Rect* lpRect) @extern("GetClientRect");
 extern fn Hwnd create_window(DWord, LPCWStr, LPCWStr, DWord, int, int, int, int, Hwnd, HMenu, HInstance, void*) @extern("CreateWindowExW");
 extern fn Bool show_window(Hwnd hWnd, int nCmdShow) @extern("ShowWindow");
 extern fn LResult def_window_proc(Hwnd hWnd, uint msg, WParam wParam, LParam lParam) @extern("DefWindowProcW");
