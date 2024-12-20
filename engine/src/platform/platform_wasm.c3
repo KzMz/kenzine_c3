@@ -26,7 +26,7 @@ extern fn void renderer_set_clear_color(Color4f* c) @if($feature(PLATFORM_WEB)) 
 extern fn void renderer_initialize() @extern("renderer_initialize") @if($feature(PLATFORM_WEB));
 extern fn void renderer_shutdown() @extern("renderer_shutdown") @if($feature(PLATFORM_WEB));
 extern fn void renderer_begin_frame(double delta_time) @extern("renderer_begin_frame") @if($feature(PLATFORM_WEB));
-extern fn void renderer_draw_frame(double delta_time) @extern("renderer_draw_frame") @if($feature(PLATFORM_WEB));
+extern fn void renderer_draw_frame() @extern("renderer_draw_frame") @if($feature(PLATFORM_WEB));
 extern fn void renderer_end_frame(double delta_time) @extern("renderer_end_frame") @if($feature(PLATFORM_WEB));
 extern fn void renderer_begin_renderpass(int type) @extern("renderer_begin_renderpass") @if($feature(PLATFORM_WEB));
 extern fn void renderer_end_renderpass(int type) @extern("renderer_end_renderpass") @if($feature(PLATFORM_WEB));

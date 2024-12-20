@@ -79,8 +79,6 @@ fn void! ShaderResourceLoaderFunctions.load(ShaderResourceLoaderFunctions* self,
         data.stages.push(stage_data);
     }
 
-    // TODO: fill the data
-
     memory::kenzine_allocator.current_tag = memory::MemoryTag.CUSTOM;
 
     out_resource.data = utils::ptr_to_slice(ShaderData, char, data);

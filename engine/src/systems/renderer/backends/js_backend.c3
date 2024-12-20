@@ -34,11 +34,21 @@ $if($feature(PLATFORM_WEB)):
 $endif
 }
 
-fn void! JSBackend.draw_frame(JSBackend* self, double delta_time) @dynamic
+fn void! JSBackend.draw_geometry(JSBackend* self, GeometryRenderData* geometry) @dynamic
 {
 $if($feature(PLATFORM_WEB)):
-    wasm::renderer_draw_frame(delta_time);
+    wasm::renderer_draw_frame();
 $endif
+}
+
+fn GeometryRenderData! JSBackend.upload_geometry(JSBackend* self, GeometryData* geometry) @dynamic
+{
+    return
+    {
+       .geometry = geometry,
+       .index_offset = 0,
+       .vertex_offset = 0,
+    };
 }
 
 fn void! JSBackend.end_frame(JSBackend* self, double delta_time) @dynamic
@@ -68,6 +78,11 @@ fn void! JSBackend.check_requirements(JSBackend* self, RendererRequirements* req
 }
 
 fn void! JSBackend.resize(JSBackend* self, usz width, usz height) @dynamic
+{
+
+}
+
+fn void! JSBackend.apply_global_uniforms(JSBackend* self, double delta_time) @dynamic
 {
 
 }

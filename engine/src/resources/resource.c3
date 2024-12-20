@@ -1,6 +1,7 @@
 ﻿module kenzine::resources;
 
 import kenzine::memory;
+import kenzine::utils;
 
 // TODO: multiple extensions per type
 enum ResourceType : int(String[] extensions, String json_type)
@@ -10,6 +11,7 @@ enum ResourceType : int(String[] extensions, String json_type)
     BINARY = { {""}, "" },
     IMAGE = { {".png", ".jpg", ".jpeg", ".bmp", ".tga"}, "" },
     SHADER = { {".shader.json"}, "shader" },
+    GEOMETRY = { {".geom.json"}, "geometry" },
     CUSTOM = { {""}, "" },
 }
 
@@ -22,6 +24,7 @@ struct ResourceMetadata
 
 struct Resource
 {
+    usz id;
     ResourceType type;
     String name;
     String path;
@@ -57,6 +60,24 @@ fn Resource* new(String resource_name, ResourceType type)
     Resource* resource = memory::kallocate(Resource, get_memory_tag(type))!!;
     resource.type = type;
     resource.name = resource_name;
+    resource.id = usz.max;
 
     return resource;
+}
+
+macro get_resource_data(Resource* resource, $Type)
+{
+    return utils::slice_to_ptr($Type, resource.data);
+}
+
+macro get_resource_data_by_id(ulong resource_id, $Type)
+{
+    char[] data = cache::get_by_id(resource_id)!;
+    return utils::slice_to_ptr($Type, data);
+}
+
+macro get_resource_data_flat(Resource* resource, $Type)
+{
+    $Type* copy_ptr = utils::slice_to_ptr($Type, resource.data);
+    return *copy_ptr;
 }

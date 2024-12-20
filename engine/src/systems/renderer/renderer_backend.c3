@@ -1,6 +1,7 @@
 ﻿module kenzine::renderer;
 
 import kenzine::common;
+import kenzine::resources;
 
 enum RenderPassType
 {
@@ -14,11 +15,15 @@ interface RendererBackend
     fn void! shutdown();
 
     fn void! begin_frame(double delta_time);
-    fn void! draw_frame(double delta_time);
     fn void! end_frame(double delta_time);
 
     fn void! begin_renderpass(RenderPassType type);
     fn void! end_renderpass(RenderPassType type);
+
+    fn GeometryRenderData! upload_geometry(GeometryData* geometry);
+    fn void! draw_geometry(GeometryRenderData* geometry);
+
+    fn void! apply_global_uniforms(double delta_time);
 
     fn void! check_requirements(RendererRequirements* requirements);
 

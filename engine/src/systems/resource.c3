@@ -57,6 +57,7 @@ fn void! ResourceSystem.register_default_loaders(ResourceSystem* self)
 {
     self.register_loader(resources::text_resource_loader())!;
     self.register_loader(resources::shader_resource_loader())!;
+    self.register_loader(resources::geometry_resource_loader())!;
 }
 
 fn void! ResourceSystem.register_loader(ResourceSystem* self, ResourceLoader loader)

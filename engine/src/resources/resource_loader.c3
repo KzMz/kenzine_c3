@@ -5,6 +5,7 @@ import kenzine::memory;
 import kenzine::faults;
 import std::collections::object;
 import std::io::file;
+import std::io::path;
 
 interface ResourceLoaderFunctions
 {
@@ -73,6 +74,8 @@ fn MemoryTag get_memory_tag(ResourceType type)
             return MemoryTag.SHADER;
         case ResourceType.IMAGE:
             return MemoryTag.TEXTURE;
+        case ResourceType.GEOMETRY:
+            return MemoryTag.GEOMETRY;
         case ResourceType.CUSTOM:
             return MemoryTag.CUSTOM;
         default:
@@ -91,7 +94,7 @@ $if(!$feature(PLATFORM_WEB)):
     
     if (try cached)
     {
-        log::log(LogLevel.INFO, "Loading resource %s from cache", path)!;
+        //log::log(LogLevel.INFO, "Loading resource %s from cache", path)!;
         return cached;
     }
 
@@ -101,7 +104,8 @@ $if(!$feature(PLATFORM_WEB)):
     usz size = io::file::get_size(path)!;
     char[] buffer = memory::kallocate_many(char, size + 1, get_memory_tag(type));
 
-    cache::add(cache_key.str_view(), buffer)!;
+    Path p = path::temp_new(path)!;
+    cache::add(cache_key.str_view(), p.basename(), buffer)!;
 
     io::file::load_buffer(path, buffer)!;
     buffer[size] = 0;

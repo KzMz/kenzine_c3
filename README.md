@@ -5,10 +5,10 @@
 Just run "build.bat" for native build and build-web.bat for web build
 
 ## TODO
-- [x] Window Resize handling
 - [x] Embedder improvements by specifying if an asset (and its dependencies) should be embedded or not
-- [ ] Geometry asset definition and loader
+- [x] Geometry asset definition and loader
 - [ ] Material asset definition and loader
+- [ ] Support for Material in Geometries
 - [ ] WebGPU requirements in JS
 - [ ] Check for "inline" for structs to see if we can parent something and reduce code duplication
 - [ ] Choose and integrate an immediate mode GUI library for debug (nuklear, raygui)

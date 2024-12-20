@@ -5,6 +5,7 @@ import kenzine::memory;
 import kenzine::faults;
 
 import std::io;
+import std::collections::map;
 
 const usz MAX_LOADED_RESOURCES = 1024;
 const String INVALID_RESOURCE_NAME = "";
@@ -15,11 +16,14 @@ struct ResourceCache
 {
     String[MAX_LOADED_RESOURCES] resource_names;
     char[][MAX_LOADED_RESOURCES] resource_data;
+
+    // TODO: search for duplicates here
+    HashMap(<String, usz>) friendly_name_to_id;
 }
 
 ResourceCache resource_cache @private;
 
-fn void! add(String resource_name, char[] resource_data)
+fn void! add(String resource_name, String friendly_name, char[] resource_data)
 {
     usz index = find_empty_index();
     if (index == INVALID_RESOURCE_ID)
@@ -29,6 +33,23 @@ fn void! add(String resource_name, char[] resource_data)
 
     resource_cache.resource_names[index] = resource_name;
     resource_cache.resource_data[index] = resource_data;
+
+    if (friendly_name != INVALID_RESOURCE_NAME)
+    {
+        resource_cache.friendly_name_to_id.set(friendly_name, index);
+    }
+}
+
+fn usz get_id(String friendly_name)
+{
+    return resource_cache.friendly_name_to_id.get(friendly_name)!!;
+}
+
+fn char[]! get_by_friendly_name(String friendly_name)
+{
+    usz index = resource_cache.friendly_name_to_id.get(friendly_name)!!;
+    String resource_name = resource_cache.resource_names[index];
+    return get(resource_name);
 }
 
 fn char[]! get(String resource_name)
@@ -40,6 +61,16 @@ fn char[]! get(String resource_name)
     }
 
     return data;
+}
+
+fn char[]! get_by_id(ulong resource_id)
+{
+    if (resource_id >= MAX_LOADED_RESOURCES)
+    {
+        return ResourceSystemError.RESOURCE_NOT_FOUND_OR_INVALID?;
+    }
+
+    return resource_cache.resource_data[resource_id];
 }
 
 fn void remove(String resource_name)
@@ -54,7 +85,7 @@ fn void remove(String resource_name)
     resource_cache.resource_data[index] = INVALID_RESOURCE_DATA;
 }
 
-fn usz find_resource_index(String resource_name) @private
+fn usz find_resource_index(String resource_name)
 {
     if (resource_name == INVALID_RESOURCE_NAME)
     {

@@ -21,6 +21,7 @@ enum MemoryTag : int(String description)
     SHADER = "SHADER\t",
     WASM = "WASM\t",
     BINARY = "BINARY\t",
+    GEOMETRY = "GEOMETRY",
 
     GPU_BUFFER = "GPU BUFFER",
     
@@ -29,8 +30,10 @@ enum MemoryTag : int(String description)
 
 enum GPUMemoryTag : int(String description)
 {
-    NONE = "UNTAGGED",
-    BUFFER = "BUFFER\t",
+    NONE = "UNTAGGED\t",
+    VERTEX_BUFFER = "VERTEX BUFFER\t",
+    INDEX_BUFFER = "INDEX BUFFER\t",
+    UNIFORM_BUFFER = "UNIFORM BUFFER\t",
 }
 
 struct TaggedMemory
