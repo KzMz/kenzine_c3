@@ -151,10 +151,11 @@ $else
         resource::load(ResourceType.GEOMETRY, "plane2d", &cube_geometry)!;
         GeometryData* cube_geometry_data = resources::get_resource_data(&cube_geometry, GeometryData);
         packet.geometries.push(cube_geometry_data);
+        packet.geometries.push(cube_geometry_data);
         // TEMP end
 
         app.renderer_system.draw(&packet)!;
-        resource::unload(&cube_geometry)!;
+        //resource::unload(&cube_geometry)!;
 
         NanoDuration frame_time = frame_clock.mark();
         app.frame_state.running_time += frame_time;
