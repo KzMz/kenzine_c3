@@ -5,8 +5,8 @@
 Just run "build.bat" for native build and build-web.bat for web build
 
 ## TODO
-- [x] Geometry asset definition and loader
 - [x] Dynamic uniform buffers for instancing and model-related data
+- [x] Aspect ratio handling
 - [ ] Material asset definition and loader
 - [ ] Support for Material in Geometries
 - [ ] WebGPU requirements in JS

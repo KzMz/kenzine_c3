@@ -103,6 +103,7 @@ struct WebGPUBackend(RendererBackend)
     webgpu::BindGroup world_bindgroup;
 
     webgpu::Color clear_color;
+    float aspect_ratio;
 
     int min_uniform_buffer_offset_alignment;
 
@@ -137,6 +138,8 @@ fn void! WebGPUBackend.resize(WebGPUBackend* self, usz width, usz height) @dynam
     self.surface_config.height = (CUInt) height;
 
     self.surface.configure(&self.surface_config);
+
+    self.aspect_ratio = (float) width / (float) height;
 }
 
 fn void! WebGPUBackend.initialize(WebGPUBackend* self, RendererParams* params) @dynamic
@@ -218,6 +221,8 @@ $endif
     surfaceConfig.next = null;
     surfaceConfig.width = (CUInt) params.swapchain_width;
     surfaceConfig.height = (CUInt) params.swapchain_height;
+
+    self.aspect_ratio = (float) params.swapchain_width / (float) params.swapchain_height;
 
     TextureUsage usage;
     usage.renderAttachment = true;
@@ -635,6 +640,7 @@ fn void! WebGPUBackend.end_renderpass(WebGPUBackend* self,RenderPassType type) @
 fn void! WebGPUBackend.apply_global_uniforms(WebGPUBackend* self, double delta_time) @dynamic
 {
     self.global_uniform_buffer.uniforms.time += (float) delta_time;
+    self.global_uniform_buffer.uniforms.aspect_ratio = self.aspect_ratio;
     self.queue.writeBuffer(self.global_uniform_buffer.buffer, 0, &self.global_uniform_buffer.uniforms, GlobalUniforms.sizeof);
 }
 

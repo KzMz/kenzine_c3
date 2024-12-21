@@ -56,6 +56,7 @@ fn SupportedShaderStage stage_from_string(String stage)
 struct GlobalUniforms
 {
     float time;
+    float aspect_ratio;
 }
 
 struct InstanceUniforms
