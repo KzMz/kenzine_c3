@@ -53,8 +53,19 @@ fn SupportedShaderStage stage_from_string(String stage)
     return SupportedShaderStage.VERTEX;
 }
 
+struct GlobalUniforms
+{
+    float time;
+}
+
+struct InstanceUniforms
+{
+    int instance_id;
+}
+
 struct GeometryRenderData
 {
+    usz instance_id;
     GeometryData* geometry;
 
     usz vertex_offset;
@@ -165,10 +176,9 @@ fn void! RendererSystem.draw(RendererSystem* self, RenderPacket* packet) @dynami
     //      get material when available
     //      apply material instance
     //      apply geometry model matrix
-    //      draw geometry
-    for (usz i = 0; i < packet.geometries.len(); i++)
+    for (usz instance_id = 0; instance_id < packet.geometries.len(); instance_id++)
     {
-        GeometryData* geometry = packet.geometries[i];
+        GeometryData* geometry = packet.geometries[instance_id];
         if (geometry == null) continue;
 
         if (!renderer_state.geometry_render_data.has_key(geometry.resource_id))
@@ -183,7 +193,9 @@ fn void! RendererSystem.draw(RendererSystem* self, RenderPacket* packet) @dynami
         if (geom_data == null) continue;
 
         geom_data.geometry = geometry; // IMPORTANT to update the slice ptr
-        renderer_state.backend.draw_geometry(geom_data)!;
+
+        renderer_state.backend.apply_instance_uniforms((int) instance_id, packet.delta_time)!;
+        renderer_state.backend.draw_geometry(geom_data, instance_id)!;
     }
 
     renderer_state.backend.end_renderpass(RenderPassType.WORLD)!;

@@ -34,7 +34,7 @@ $if($feature(PLATFORM_WEB)):
 $endif
 }
 
-fn void! JSBackend.draw_geometry(JSBackend* self, GeometryRenderData* geometry) @dynamic
+fn void! JSBackend.draw_geometry(JSBackend* self, GeometryRenderData* geometry, usz instance_id) @dynamic
 {
 $if($feature(PLATFORM_WEB)):
     wasm::renderer_draw_frame();
@@ -83,6 +83,11 @@ fn void! JSBackend.resize(JSBackend* self, usz width, usz height) @dynamic
 }
 
 fn void! JSBackend.apply_global_uniforms(JSBackend* self, double delta_time) @dynamic
+{
+
+}
+
+fn void! JSBackend.apply_instance_uniforms(JSBackend* self, int instance_id, double delta_time) @dynamic
 {
 
 }

@@ -21,6 +21,7 @@ import std::math::vector;
 
 const usz VERTEX_BUFFER_VERTEX_COUNT = 1024 * 1024;
 const usz INDEX_BUFFER_INDEX_COUNT = 1024 * 1024;
+const usz MAX_INSTANCE_COUNT = 1024;
 
 macro usz vertex_buffer_size($Type)
 {
@@ -45,6 +46,8 @@ struct FrameState
     webgpu::TextureView target_view;
     webgpu::CommandEncoder command_encoder;
     webgpu::RenderPassEncoder renderpass;
+
+    usz instance_count;
 }
 
 struct MappedBuffer
@@ -65,15 +68,16 @@ struct IndexBuffer
     usz index_count;
 }
 
-struct Uniforms
-{
-    float time;
-}
-
-struct UniformBuffer
+struct GlobalUniformBuffer
 {
     webgpu::Buffer buffer;
-    Uniforms uniforms;
+    GlobalUniforms uniforms;
+}
+
+struct InstanceUniformBuffer
+{
+    webgpu::Buffer buffer;
+    InstanceUniforms[MAX_INSTANCE_COUNT] uniforms;
 }
 
 struct WebGPUBackend(RendererBackend)
@@ -90,7 +94,8 @@ struct WebGPUBackend(RendererBackend)
     VertexBuffer vertex_buffer;
     IndexBuffer index_buffer;
 
-    UniformBuffer uniform_buffer;
+    GlobalUniformBuffer global_uniform_buffer;
+    InstanceUniformBuffer instance_uniform_buffer;
 
     webgpu::RenderPipeline world_pipeline;
     webgpu::PipelineLayout world_pipeline_layout;
@@ -98,6 +103,8 @@ struct WebGPUBackend(RendererBackend)
     webgpu::BindGroup world_bindgroup;
 
     webgpu::Color clear_color;
+
+    int min_uniform_buffer_offset_alignment;
 
     FrameState frame_state;
 }
@@ -183,6 +190,7 @@ fn void! WebGPUBackend.initialize(WebGPUBackend* self, RendererParams* params) @
         return err?;
     }
 
+    self.min_uniform_buffer_offset_alignment = required_limits.limits.minUniformBufferOffsetAlignment;
     self.device = device;
 
     self.print_device_info()!;
@@ -338,18 +346,28 @@ $endif
     pipelineDescriptor.multisample.alphaToCoverageEnabled = CBool.FALSE;
 
     // Uniform binding
-    webgpu::BindGroupLayoutEntry bindingLayout;
-    bindingLayout.set_defaults();
-    bindingLayout.binding = 0;
-    bindingLayout.visibility.vertex = true;
-    bindingLayout.buffer.type = BufferBindingType.UNIFORM;
-    bindingLayout.buffer.minBindingSize = Uniforms.sizeof < 16 ? 16 : Uniforms.sizeof;
+    webgpu::BindGroupLayoutEntry globalBindingLayout;
+    globalBindingLayout.set_defaults();
+    globalBindingLayout.binding = 0;
+    globalBindingLayout.visibility.vertex = true;
+    globalBindingLayout.buffer.type = BufferBindingType.UNIFORM;
+    globalBindingLayout.buffer.minBindingSize = GlobalUniforms.sizeof < 16 ? 16 : GlobalUniforms.sizeof;
+
+    webgpu::BindGroupLayoutEntry instanceBindingLayout;
+    instanceBindingLayout.set_defaults();
+    instanceBindingLayout.binding = 1;
+    instanceBindingLayout.visibility.vertex = true;
+    instanceBindingLayout.buffer.type = BufferBindingType.UNIFORM;
+    instanceBindingLayout.buffer.minBindingSize = InstanceUniforms.sizeof < 16 ? 16 : InstanceUniforms.sizeof;
+    instanceBindingLayout.buffer.hasDynamicOffset = CBool.TRUE;
+
+    webgpu::BindGroupLayoutEntry[] entries = { globalBindingLayout, instanceBindingLayout };
 
     webgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor;
     bindGroupLayoutDescriptor.next = null;
     bindGroupLayoutDescriptor.label = "Kenzine Bind Group Layout";
-    bindGroupLayoutDescriptor.entryCount = 1;
-    bindGroupLayoutDescriptor.entries = &bindingLayout;
+    bindGroupLayoutDescriptor.entryCount = entries.len;
+    bindGroupLayoutDescriptor.entries = entries.ptr;
     self.world_bindgroup_layout = self.device.createBindGroupLayout(&bindGroupLayoutDescriptor);
 
     // Pipeline layout
@@ -467,19 +485,28 @@ fn TextureView WebGPUBackend.get_next_surface_texture_view(WebGPUBackend* self)
 
 fn void! WebGPUBackend.create_bindgroups(WebGPUBackend* self)
 {
-    webgpu::BindGroupEntry binding;
-    binding.next = null;
-    binding.binding = 0;
-    binding.buffer = self.uniform_buffer.buffer;
-    binding.offset = 0;
-    binding.size = Uniforms.sizeof < 16 ? 16 : Uniforms.sizeof;
+    webgpu::BindGroupEntry globalBinding;
+    globalBinding.next = null;
+    globalBinding.binding = 0;
+    globalBinding.buffer = self.global_uniform_buffer.buffer;
+    globalBinding.offset = 0;
+    globalBinding.size = GlobalUniforms.sizeof < 16 ? 16 : GlobalUniforms.sizeof;
+
+    webgpu::BindGroupEntry instanceBinding;
+    instanceBinding.next = null;
+    instanceBinding.binding = 1;
+    instanceBinding.buffer = self.instance_uniform_buffer.buffer;
+    instanceBinding.offset = 0;
+    instanceBinding.size = InstanceUniforms.sizeof < 16 ? 16 : InstanceUniforms.sizeof;
+
+    webgpu::BindGroupEntry[] entries = { globalBinding, instanceBinding };
 
     webgpu::BindGroupDescriptor bindGroupDescriptor;
     bindGroupDescriptor.next = null;
     bindGroupDescriptor.label = "Kenzine Bind Group";
     bindGroupDescriptor.layout = self.world_bindgroup_layout;
-    bindGroupDescriptor.entryCount = 1;
-    bindGroupDescriptor.entries = &binding;
+    bindGroupDescriptor.entryCount = entries.len;
+    bindGroupDescriptor.entries = entries.ptr;
     self.world_bindgroup = self.device.createBindGroup(&bindGroupDescriptor);
 }
 
@@ -515,15 +542,21 @@ fn void! WebGPUBackend.create_buffers(WebGPUBackend* self)
 
     usage.index = false;
     usage.uniform = true;
-    bufferDescriptor.label = "Kenzine Uniform Buffer";
+    bufferDescriptor.label = "Kenzine Global Uniform Buffer";
     bufferDescriptor.usage = usage;
-    bufferDescriptor.size = (CULongLong) (Uniforms.sizeof < 16 ? 16 : Uniforms.sizeof);
-    self.uniform_buffer.buffer = self.device.createBuffer(&bufferDescriptor);
+    bufferDescriptor.size = (CULongLong) (GlobalUniforms.sizeof < 16 ? 16 : GlobalUniforms.sizeof);
+    self.global_uniform_buffer.buffer = self.device.createBuffer(&bufferDescriptor);
 
     memory::submit_gpu_memory_allocation((usz) bufferDescriptor.size, GPUMemoryTag.UNIFORM_BUFFER);
 
-    self.uniform_buffer.uniforms.time = 1.0;
-    self.queue.writeBuffer(self.uniform_buffer.buffer, 0, &self.uniform_buffer.uniforms, Uniforms.sizeof);
+    self.global_uniform_buffer.uniforms.time = 1.0;
+    self.queue.writeBuffer(self.global_uniform_buffer.buffer, 0, &self.global_uniform_buffer.uniforms, GlobalUniforms.sizeof);
+
+    bufferDescriptor.label = "Kenzine Instance Uniform Buffer";
+    bufferDescriptor.size = (CULongLong) ((InstanceUniforms.sizeof * MAX_INSTANCE_COUNT) < 16 ? 16 : (InstanceUniforms.sizeof * MAX_INSTANCE_COUNT));
+    self.instance_uniform_buffer.buffer = self.device.createBuffer(&bufferDescriptor);
+
+    memory::submit_gpu_memory_allocation((usz) bufferDescriptor.size, GPUMemoryTag.UNIFORM_BUFFER);
 }
 
 fn void on_buffer2_mapped(BufferMapAsyncStatus status, void* buffer)
@@ -560,8 +593,12 @@ fn void! WebGPUBackend.release_buffers(WebGPUBackend* self)
     self.index_buffer.buffer.release();
     memory::submit_gpu_memory_deallocation((usz) size, GPUMemoryTag.INDEX_BUFFER);
 
-    size = self.uniform_buffer.buffer.getSize();
-    self.uniform_buffer.buffer.release();
+    size = self.global_uniform_buffer.buffer.getSize();
+    self.global_uniform_buffer.buffer.release();
+    memory::submit_gpu_memory_deallocation((usz) size, GPUMemoryTag.UNIFORM_BUFFER);
+
+    size = self.instance_uniform_buffer.buffer.getSize();
+    self.instance_uniform_buffer.buffer.release();
     memory::submit_gpu_memory_deallocation((usz) size, GPUMemoryTag.UNIFORM_BUFFER);
 }
 
@@ -597,8 +634,15 @@ fn void! WebGPUBackend.end_renderpass(WebGPUBackend* self,RenderPassType type) @
 
 fn void! WebGPUBackend.apply_global_uniforms(WebGPUBackend* self, double delta_time) @dynamic
 {
-    self.uniform_buffer.uniforms.time += (float) delta_time;
-    self.queue.writeBuffer(self.uniform_buffer.buffer, 0, &self.uniform_buffer.uniforms, Uniforms.sizeof);
+    self.global_uniform_buffer.uniforms.time += (float) delta_time;
+    self.queue.writeBuffer(self.global_uniform_buffer.buffer, 0, &self.global_uniform_buffer.uniforms, GlobalUniforms.sizeof);
+}
+
+fn void! WebGPUBackend.apply_instance_uniforms(WebGPUBackend* self, int instance_id, double delta_time) @dynamic
+{
+    CUInt offset = self.get_instance_uniform_offset(instance_id);
+    self.instance_uniform_buffer.uniforms[instance_id].instance_id = instance_id;
+    self.queue.writeBuffer(self.instance_uniform_buffer.buffer, offset, &self.instance_uniform_buffer.uniforms[instance_id], InstanceUniforms.sizeof);
 }
 
 fn void! WebGPUBackend.begin_frame(WebGPUBackend* self, double delta_time) @dynamic
@@ -610,6 +654,7 @@ fn void! WebGPUBackend.begin_frame(WebGPUBackend* self, double delta_time) @dyna
     }
 
     self.frame_state.target_view = target_view;
+    self.frame_state.instance_count = 0;
 
     CommandEncoderDescriptor encoderDescriptor;
     encoderDescriptor.next = null;
@@ -647,13 +692,14 @@ fn GeometryRenderData! WebGPUBackend.upload_geometry(WebGPUBackend* self, Geomet
 
     return
     {
+        .instance_id = self.frame_state.instance_count++,
         .geometry = geometry,
         .index_offset = previous_index_offset,
         .vertex_offset = previous_vertex_offset,
     };
 }
 
-fn void! WebGPUBackend.draw_geometry(WebGPUBackend* self, GeometryRenderData* geometry) @dynamic
+fn void! WebGPUBackend.draw_geometry(WebGPUBackend* self, GeometryRenderData* geometry, usz instance_id) @dynamic
 {
     CULongLong vertex_offset = geometry.vertex_offset;
     CULongLong vertex_size = 0;
@@ -672,10 +718,18 @@ fn void! WebGPUBackend.draw_geometry(WebGPUBackend* self, GeometryRenderData* ge
     self.frame_state.renderpass.setVertexBuffer(0, self.vertex_buffer.buffer, vertex_offset, vertex_size);
     self.frame_state.renderpass.setIndexBuffer(self.index_buffer.buffer, IndexFormat.UINT32, index_offset, index_size);
 
-    self.frame_state.renderpass.setBindGroup(0, self.world_bindgroup, 0, null);
+    CUInt instance_uniform_offset = self.get_instance_uniform_offset(instance_id);
+    self.frame_state.renderpass.setBindGroup(0, self.world_bindgroup, 1, &instance_uniform_offset);
 
     //self.frame_state.renderpass.draw((CUInt) self.vertex_buffer.vertex_count, 1, 0, 0);
     self.frame_state.renderpass.drawIndexed((CUInt) self.index_buffer.index_count, 1, 0, 0, 0);
+}
+
+fn CUInt WebGPUBackend.get_instance_uniform_offset(WebGPUBackend* self, usz instance_id)
+{
+    int step = self.min_uniform_buffer_offset_alignment;
+    int divided = (int) instance_id / step + (instance_id % step == 0 ? 0 : 1);
+    return (CUInt) (divided * step);
 }
 
 fn void! WebGPUBackend.end_frame(WebGPUBackend* self, double delta_time) @dynamic
@@ -928,6 +982,7 @@ fn webgpu::RequiredLimits! WebGPUBackend.get_requirements(WebGPUBackend* self, R
     limits.limits.maxBufferSize = requirements.max_buffer_size;
     limits.limits.maxVertexBufferArrayStride = requirements.max_vertex_buffer_stride;
     limits.limits.maxInterStageShaderComponents = requirements.max_interstage_shader_components;
+    limits.limits.maxDynamicUniformBuffersPerPipelineLayout = 1;
 
     return limits;
 }

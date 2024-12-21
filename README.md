@@ -5,8 +5,8 @@
 Just run "build.bat" for native build and build-web.bat for web build
 
 ## TODO
-- [x] Embedder improvements by specifying if an asset (and its dependencies) should be embedded or not
 - [x] Geometry asset definition and loader
+- [x] Dynamic uniform buffers for instancing and model-related data
 - [ ] Material asset definition and loader
 - [ ] Support for Material in Geometries
 - [ ] WebGPU requirements in JS

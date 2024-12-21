@@ -21,9 +21,10 @@ interface RendererBackend
     fn void! end_renderpass(RenderPassType type);
 
     fn GeometryRenderData! upload_geometry(GeometryData* geometry);
-    fn void! draw_geometry(GeometryRenderData* geometry);
+    fn void! draw_geometry(GeometryRenderData* geometry, usz instance_id);
 
     fn void! apply_global_uniforms(double delta_time);
+    fn void! apply_instance_uniforms(int instance_id, double delta_time);
 
     fn void! check_requirements(RendererRequirements* requirements);
 
